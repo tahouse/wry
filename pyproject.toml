@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0", "wheel", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "drycli"
-version = "0.0.1"
+dynamic = ["version"]
 description = "DRY (Don't Repeat Yourself) CLI - Define your CLI once with Pydantic models"
 authors = [{name = "Tyler House", email = "26489166+tahouse@users.noreply.github.com"}]
 readme = "README.md"
@@ -40,6 +40,7 @@ dev = [
     "mypy",
     "build",
     "twine",
+    "setuptools-scm>=8.0",  # Version management from git tags
     "safety",        # Security vulnerability scanning
     "bandit[toml]",  # Security linting
 ]
@@ -93,3 +94,8 @@ warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
 strict_equality = true
+
+[tool.setuptools_scm]
+# Get version from git tags
+write_to = "src/drycli/_version.py"
+fallback_version = "0.0.1-dev"

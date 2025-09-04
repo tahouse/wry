@@ -28,7 +28,9 @@ def test_package_metadata():
     assert hasattr(drycli, "__author__")
     assert hasattr(drycli, "__email__")
 
-    assert drycli.__version__ == "0.0.1"
+    # Version is now dynamic from git tags, just check it exists and is a string
+    assert isinstance(drycli.__version__, str)
+    assert len(drycli.__version__) > 0
     assert drycli.__author__ == "Tyler House"
     assert drycli.__email__ == "26489166+tahouse@users.noreply.github.com"
 

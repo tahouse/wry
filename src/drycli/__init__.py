@@ -42,7 +42,13 @@ Example:
 Coming soon - this package is under active development.
 """
 
-__version__ = "0.0.1"
+# Version is managed by setuptools-scm from git tags
+try:
+    from ._version import __version__
+except ImportError:
+    # Fallback for development installs
+    __version__ = "0.0.1-dev"
+
 __author__ = "Tyler House"
 __email__ = "26489166+tahouse@users.noreply.github.com"
 
