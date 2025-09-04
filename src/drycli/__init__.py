@@ -50,10 +50,17 @@ Coming soon - this package is under active development.
 
 # Version is managed by setuptools-scm from git tags
 try:
-    from ._version import __version__
+    from ._version import __commit_id__, __version__
+
+    # Create a full version string with git info
+    __version_full__ = __version__
+    if __commit_id__:
+        __version_full__ += f"+{__commit_id__}"
 except ImportError:
     # Fallback for development installs
     __version__ = "0.0.1-dev"
+    __version_full__ = __version__
+    __commit_id__ = None
 
 __author__ = "Tyler House"
 __email__ = "26489166+tahouse@users.noreply.github.com"
@@ -66,6 +73,9 @@ __all__ = [
     "generate_click_options",
     "ValueSource",
     "coming_soon",
+    "__version__",
+    "__version_full__",
+    "__commit_id__",
 ]
 
 
