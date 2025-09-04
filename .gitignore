@@ -140,3 +140,4 @@ dmypy.json
 
 # Auto-generated version file
 src/drycli/_version.py
+.post-release-marker

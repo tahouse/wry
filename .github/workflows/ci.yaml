@@ -103,14 +103,54 @@ jobs:
     permissions:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Need full history for setuptools-scm
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
         name: dist
         path: dist/
 
-    - name: Publish to PyPI
+    - name: Publish stable release to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
+
+    - name: Create post-release commit for dev version
+      run: |
+        # Configure git
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+
+        # Create a tiny change to trigger a new dev version
+        echo "# Post-release marker for ${{ github.ref_name }}" >> .post-release-marker
+        git add .post-release-marker
+        git commit -m "chore: post-release marker for ${{ github.ref_name }}
+
+        This commit ensures setuptools-scm generates a .dev version
+        for the next development cycle after ${{ github.ref_name }}."
+
+    - name: Push post-release commit
+      run: git push origin main
+
+    - name: Build and publish dev version
+      run: |
+        # Install build tools
+        pip install build setuptools-scm
+
+        # Build the dev version (setuptools-scm will auto-generate X.Y.Z.dev0+...)
+        python -m build
+
+    - name: Publish dev version to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        skip-existing: true
 
     - name: Create GitHub Release
       uses: actions/create-release@v1
@@ -126,8 +166,14 @@ jobs:
 
           ## Installation
 
+          **Stable release:**
           ```bash
           pip install drycli==${{ github.ref_name }}
+          ```
+
+          **Latest development version:**
+          ```bash
+          pip install --pre drycli
           ```
         draft: false
         prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
