@@ -35,18 +35,25 @@ dependencies = [
 dev = [
     "pytest>=6.0",
     "pytest-cov",
-    "black",
+    "pytest-xdist",  # Parallel test execution
     "ruff",
     "mypy",
     "build",
     "twine",
+    "safety",        # Security vulnerability scanning
+    "bandit[toml]",  # Security linting
+]
+test = [
+    "pytest>=6.0",
+    "pytest-cov",
+    "pytest-xdist",
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/drycli"
-Repository = "https://github.com/yourusername/drycli"
-Issues = "https://github.com/yourusername/drycli/issues"
-Documentation = "https://github.com/yourusername/drycli#readme"
+Homepage = "https://github.com/tahouse/drycli"
+Repository = "https://github.com/tahouse/drycli"
+Issues = "https://github.com/tahouse/drycli/issues"
+Documentation = "https://github.com/tahouse/drycli#readme"
 
 [tool.setuptools.packages.find]
 where = ["src"]
