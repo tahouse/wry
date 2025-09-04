@@ -137,3 +137,6 @@ dmypy.json
 
 # macOS
 .DS_Store
+
+# Auto-generated version file
+src/drycli/_version.py

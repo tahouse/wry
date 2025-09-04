@@ -1,3 +1,9 @@
+"""DRY CLI - Don't Repeat Yourself CLI builder."""
+
+from __future__ import annotations
+
+from typing import Callable
+
 """DRY CLI - Don't Repeat Yourself CLI builder.
 
 Define your CLI once using Pydantic models and get:
@@ -90,7 +96,7 @@ class DryModel:
     pass
 
 
-def generate_click_options(model_class):
+def generate_click_options(model_class: type) -> Callable[[Callable], Callable]:
     """Placeholder for generating Click options from Pydantic models.
 
     This will be the main decorator that extracts Annotated fields from
@@ -103,7 +109,7 @@ def generate_click_options(model_class):
         Decorator function that applies Click options to the command
     """
 
-    def decorator(func):
+    def decorator(func: Callable) -> Callable:
         return func
 
     return decorator
