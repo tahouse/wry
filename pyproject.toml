@@ -104,4 +104,7 @@ strict_equality = true
 [tool.setuptools_scm]
 # Get version from git tags
 write_to = "src/drycli/_version.py"
-fallback_version = "0.0.1-dev"
+fallback_version = "0.0.1.dev0"
+# Configure version string for PyPI compatibility
+version_scheme = "no-guess-dev"
+local_scheme = "no-local-version"
