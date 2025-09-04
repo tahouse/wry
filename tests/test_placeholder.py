@@ -1,7 +1,6 @@
 """Basic tests for drycli placeholder functionality."""
 
-import pytest
-from drycli import coming_soon, DryModel, AutoOption, generate_click_options
+from drycli import AutoOption, DryModel, coming_soon, generate_click_options
 
 
 def test_coming_soon():

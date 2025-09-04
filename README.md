@@ -14,14 +14,14 @@ This package is currently being developed. The namespace is reserved and the ini
 
 `drycli` is a modern Python library that eliminates repetition in CLI development. Define your configuration schema **once** using Pydantic models and automatically get:
 
-✅ **Type-safe command-line interfaces** - Full IDE support with autocomplete  
-✅ **Automatic validation** - Helpful error messages with constraint checking  
-✅ **Environment variable support** - Auto-discovery and type conversion  
-✅ **Configuration file loading** - JSON/YAML with proper precedence  
-✅ **Value source tracking** - Know where each setting came from  
-✅ **Auto-generated help text** - Documentation from your model  
-✅ **Constraint integration** - Pydantic validators become CLI help  
-✅ **Zero boilerplate** - No duplicate definitions  
+✅ **Type-safe command-line interfaces** - Full IDE support with autocomplete
+✅ **Automatic validation** - Helpful error messages with constraint checking
+✅ **Environment variable support** - Auto-discovery and type conversion
+✅ **Configuration file loading** - JSON/YAML with proper precedence
+✅ **Value source tracking** - Know where each setting came from
+✅ **Auto-generated help text** - Documentation from your model
+✅ **Constraint integration** - Pydantic validators become CLI help
+✅ **Zero boilerplate** - No duplicate definitions
 
 ## Preview: How It Will Work
 
@@ -33,7 +33,7 @@ from drycli import DryModel, click_config, AutoOption
 
 class ServerConfig(DryModel):
     """Configuration for the server."""
-    
+
     # This creates --port with validation and help text automatically
     port: Annotated[int, AutoOption] = Field(
         default=8000,
@@ -41,13 +41,13 @@ class ServerConfig(DryModel):
         le=65535,
         description="Port number to bind to"
     )
-    
-    # This creates --host 
+
+    # This creates --host
     host: Annotated[str, AutoOption] = Field(
         default="localhost",
         description="Host address to bind to"
     )
-    
+
     # This creates --debug/--no-debug flag
     debug: Annotated[bool, AutoOption] = Field(
         default=False,
@@ -62,7 +62,7 @@ def serve(config: ServerConfig) -> None:
     print(f"Starting server on {config.host}:{config.port}")
     if config.debug:
         print("Debug mode enabled")
-    
+
     # config is fully typed - your IDE knows all the fields!
     # You also get source tracking:
     # print(f"Port from: {config.source.port}")  # "cli", "env", "config", or "default"
@@ -90,13 +90,13 @@ This single definition gives you:
 class ServerConfig:
     def __init__(self, port: int, host: str, debug: bool):
         self.port = port
-        self.host = host  
+        self.host = host
         self.debug = debug
 
 # Define your CLI (duplicate information!)
 @click.command()
 @click.option('--port', type=int, default=8000, help='Port number')
-@click.option('--host', type=str, default='localhost', help='Host address') 
+@click.option('--host', type=str, default='localhost', help='Host address')
 @click.option('--debug/--no-debug', default=False, help='Debug mode')
 def serve(port: int, host: str, debug: bool):
     config = ServerConfig(port, host, debug)  # Manual construction
@@ -120,7 +120,7 @@ def serve(config: ServerConfig):  # Fully typed, automatically constructed!
 ## Why Choose drycli?
 
 - **🎯 DRY Principle**: Define once, use everywhere
-- **🔒 Type Safety**: Full mypy and IDE support  
+- **🔒 Type Safety**: Full mypy and IDE support
 - **⚡ Zero Boilerplate**: No duplicate CLI definitions
 - **🌍 Environment Ready**: Automatic env var support
 - **📁 Config Files**: JSON/YAML loading with precedence
@@ -143,7 +143,7 @@ def serve(config: ServerConfig):  # Fully typed, automatically constructed!
 ## Coming Soon
 
 - 📦 **Initial Release** - Core functionality
-- 📖 **Full Documentation** - Comprehensive guides and API reference  
+- 📖 **Full Documentation** - Comprehensive guides and API reference
 - 🧪 **Examples** - Real-world usage patterns
 - 🔌 **Plugins** - Extensions for popular frameworks
 - 🎨 **Rich Integration** - Beautiful terminal output

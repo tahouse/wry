@@ -84,7 +84,7 @@ jobs:
       run: twine check dist/*
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dist
         path: dist/
@@ -99,7 +99,7 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
     - name: Download build artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: dist
         path: dist/
@@ -119,7 +119,7 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
     - name: Download build artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: dist
         path: dist/
@@ -136,11 +136,11 @@ jobs:
         release_name: Release ${{ github.ref_name }}
         body: |
           ## Changes
-          
+
           See the [changelog](CHANGELOG.md) for details.
-          
+
           ## Installation
-          
+
           ```bash
           pip install drycli==${{ github.ref_name }}
           ```
@@ -171,7 +171,7 @@ jobs:
       run: bandit -r src/ -f json -o bandit-report.json || true
 
     - name: Upload security scan results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: security-reports
