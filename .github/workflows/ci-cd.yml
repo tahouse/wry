@@ -144,6 +144,13 @@ jobs:
       id-token: write  # For sigstore signing
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        sparse-checkout: |
+          CHANGELOG.md
+          scripts/extract_release_notes.py
+
     - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
@@ -157,26 +164,28 @@ jobs:
           ./dist/*.tar.gz
           ./dist/*.whl
 
+    - name: Extract release notes from CHANGELOG
+      id: release_notes
+      run: |
+        # Make script executable
+        chmod +x scripts/extract_release_notes.py
+
+        # Extract release notes and save to file
+        python scripts/extract_release_notes.py '${{ github.ref_name }}' > release_notes.md
+
+        # Read the content for the release body
+        echo 'RELEASE_NOTES<<EOF' >> $GITHUB_ENV
+        cat release_notes.md >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+
     - name: Create GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        # Extract version number without 'v' prefix
-        VERSION="${{ github.ref_name }}"
-        VERSION="${VERSION#v}"
-
         gh release create '${{ github.ref_name }}' \
           --repo '${{ github.repository }}' \
-          --title 'Release ${{ github.ref_name }}' \
-          --notes "Install from PyPI:
-        \`\`\`bash
-        pip install wry==${VERSION}
-        \`\`\`
-
-        Install latest dev version:
-        \`\`\`bash
-        pip install --pre wry
-        \`\`\`"
+          --title '${{ github.ref_name }}' \
+          --notes "$RELEASE_NOTES"
 
     - name: Upload release artifacts
       env:
