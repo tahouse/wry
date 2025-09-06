@@ -354,13 +354,13 @@ wry supports Python 3.10, 3.11, and 3.12. To ensure compatibility:
 
 ```bash
 # Test with all available Python versions locally
-./test_all_versions.sh
+./scripts/test_all_versions.sh
 
 # Test in CI-like environment using Docker
-./test_ci_locally.sh
+./scripts/test_ci_locally.sh
 
 # Run GitHub Actions locally with act (requires act to be installed)
-./test_with_act.sh
+./scripts/test_with_act.sh
 ```
 
 ### Code Quality
