@@ -139,4 +139,4 @@ dmypy.json
 .DS_Store
 
 # Auto-generated version file
-src/drycli/_version.py
+wry/_version.py

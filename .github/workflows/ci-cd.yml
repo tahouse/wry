@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
     - name: Checkout code
@@ -42,9 +42,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install -e ".[dev,test]"
 
+    - name: Install pre-commit hooks
+      run: |
+        pre-commit install
+
     - name: Run pre-commit checks
       run: |
-        pre-commit run --all-files
+        pre-commit run --all-files --show-diff-on-failure
 
   build:
     name: Build distribution 📦
@@ -89,7 +93,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/drycli
+      url: https://test.pypi.org/p/wry
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
 
@@ -113,7 +117,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/drycli
+      url: https://pypi.org/p/wry
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
 
@@ -166,12 +170,12 @@ jobs:
           --title 'Release ${{ github.ref_name }}' \
           --notes "Install from PyPI:
         \`\`\`bash
-        pip install drycli==${VERSION}
+        pip install wry==${VERSION}
         \`\`\`
 
         Install latest dev version:
         \`\`\`bash
-        pip install --pre drycli
+        pip install --pre wry
         \`\`\`"
 
     - name: Upload release artifacts

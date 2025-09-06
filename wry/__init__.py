@@ -1,10 +1,8 @@
-"""DRY CLI - Don't Repeat Yourself CLI builder."""
+"""WRY - Why Repeat Yourself? CLI builder."""
 
 from __future__ import annotations
 
-from typing import Callable
-
-"""DRY CLI - Don't Repeat Yourself CLI builder.
+"""WRY - Why Repeat Yourself? CLI builder.
 
 Define your CLI once using Pydantic models and get:
 - Type-safe command-line interfaces
@@ -21,9 +19,9 @@ Example:
     from typing import Annotated, Any
     from pydantic import Field
     import click
-    from drycli import DryModel, generate_click_options, AutoOption
+    from wry import WryModel, generate_click_options, AutoOption
 
-    class MyConfig(DryModel):
+    class MyConfig(WryModel):
         timeout: Annotated[int, AutoOption] = Field(
             default=30,
             ge=0,
@@ -82,88 +80,59 @@ except ImportError:
 __author__ = "Tyler House"
 __email__ = "26489166+tahouse@users.noreply.github.com"
 
-# Placeholder exports to reserve the API namespace
+# Import the actual implementation
+from .auto_model import AutoWryModel, create_auto_model  # noqa: E402
+from .click_integration import (  # noqa: E402
+    AutoClickParameter,
+    build_config_with_sources,
+    config_option,
+    eager_json_config,
+    generate_click_parameters,
+)
+from .core import (  # noqa: E402
+    FieldWithSource,
+    TrackedValue,
+    ValueSource,
+    WryModel,
+    extract_field_constraints,
+)
+from .multi_model import (  # noqa: E402
+    create_models,
+    multi_model,
+    singleton_option,
+    split_kwargs_by_model,
+)
+
+# Convenience aliases
+AutoOption = AutoClickParameter.OPTION
+AutoArgument = AutoClickParameter.ARGUMENT
+
+# Re-export all public APIs
 __all__ = [
-    "DryModel",
+    # Core functionality
+    "WryModel",
+    "AutoWryModel",
+    "create_auto_model",
+    "ValueSource",
+    "TrackedValue",
+    "FieldWithSource",
+    "extract_field_constraints",
+    # Click integration
+    "AutoClickParameter",
+    "generate_click_parameters",
+    "eager_json_config",
+    "config_option",
+    "build_config_with_sources",
+    # Multi-model support
+    "multi_model",
+    "create_models",
+    "split_kwargs_by_model",
+    "singleton_option",
+    # Convenience exports
     "AutoOption",
     "AutoArgument",
-    "generate_click_options",
-    "ValueSource",
-    "coming_soon",
+    # Version info
     "__version__",
     "__version_full__",
     "__commit_id__",
 ]
-
-
-class ValueSource:
-    """Placeholder for value source tracking."""
-
-    CLI = "cli"
-    CONFIG = "config"
-    ENV = "env"
-    DEFAULT = "default"
-
-
-class AutoOption:
-    """Placeholder for automatic Click option generation."""
-
-    pass
-
-
-class AutoArgument:
-    """Placeholder for automatic Click argument generation."""
-
-    pass
-
-
-class DryModel:
-    """Placeholder for the main configuration model base class."""
-
-    pass
-
-
-def generate_click_options(model_class: type) -> Callable[[Callable], Callable]:
-    """Placeholder for generating Click options from Pydantic models.
-
-    This will be the main decorator that extracts Annotated fields from
-    your Pydantic model and generates the corresponding Click options.
-
-    Args:
-        model_class: Pydantic model class with Annotated fields
-
-    Returns:
-        Decorator function that applies Click options to the command
-    """
-
-    def decorator(func: Callable) -> Callable:
-        return func
-
-    return decorator
-
-
-def coming_soon() -> str:
-    """This package is under development.
-
-    Returns:
-        A message indicating the package is coming soon.
-    """
-    return (
-        "DRY CLI is coming soon! 🚧\n\n"
-        "This package will eliminate repetition in CLI development by letting you "
-        "define your configuration schema once using Pydantic models and "
-        "automatically generating type-safe Click interfaces.\n\n"
-        "Features in development:\n"
-        "• Type-safe CLI generation from Pydantic models\n"
-        "• Environment variable support with auto-discovery\n"
-        "• Configuration file loading (JSON/YAML)\n"
-        "• Value source tracking\n"
-        "• Automatic validation with helpful errors\n"
-        "• Constraint integration\n\n"
-        "Check back soon for the full release!"
-    )
-
-
-# For now, just export the coming_soon function for testing
-if __name__ == "__main__":
-    print(coming_soon())

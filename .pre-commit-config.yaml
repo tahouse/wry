@@ -25,7 +25,7 @@ repos:
         entry: pytest
         language: system
         types: [python]
-        args: [--cov=drycli, --cov-report=xml, --cov-report=term-missing]
+        args: [--cov=wry, --cov-report=xml, --cov-report=term-missing, --cov-fail-under=90]
         pass_filenames: false
         always_run: true
       - id: mypy
@@ -33,7 +33,7 @@ repos:
         entry: mypy
         language: system
         types: [python]
-        args: [src/]
+        args: [wry/]
         pass_filenames: false
 
 # Temporarily disabled - bandit has dependency issues in pre-commit
@@ -46,7 +46,7 @@ repos:
 exclude: |
   (?x)(
     # Exclude auto-generated files
-    src/drycli/_version\.py|
+    wry/_version\.py|
     # Exclude build artifacts
     dist/|
     build/|
