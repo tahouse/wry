@@ -76,6 +76,8 @@ Install latest dev version:
 pip install --pre wry
 ```
 
+View on PyPI: https://pypi.org/project/wry/
+
 ## What's Changed
 
 {notes}
