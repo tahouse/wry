@@ -1,8 +1,9 @@
 """Core WryModel implementation."""
 
 import json
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, ClassVar, TypeVar
+from typing import Any, ClassVar, TypeVar, cast
 
 import click
 from pydantic import BaseModel, ConfigDict
@@ -416,8 +417,8 @@ class WryModel(BaseModel):
                 if field_info.default is not PydanticUndefined:
                     config_data[field_name] = TrackedValue(field_info.default, ValueSource.DEFAULT)
                 elif field_info.default_factory is not None:
-                    factory = field_info.default_factory
-                    config_data[field_name] = TrackedValue(factory(), ValueSource.DEFAULT)  # type: ignore[call-arg]
+                    factory = cast(Callable[[], Any], field_info.default_factory)
+                    config_data[field_name] = TrackedValue(factory(), ValueSource.DEFAULT)
 
         return cls.create_with_sources(config_data)
 
@@ -625,7 +626,7 @@ class WryModel(BaseModel):
                 if field_info.default is not PydanticUndefined:
                     result[field_name] = field_info.default
                 elif field_info.default_factory is not None:
-                    factory = field_info.default_factory
-                    result[field_name] = factory()  # type: ignore[call-arg]
+                    factory = cast(Callable[[], Any], field_info.default_factory)
+                    result[field_name] = factory()
 
         return result

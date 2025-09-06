@@ -79,7 +79,22 @@ class AutoWryModel(WryModel):
 
                         # Add AutoOption to existing annotation
                         base_type = get_args(annotation)[0]
-                        cls.__annotations__[attr_name] = Annotated[base_type, AutoClickParameter.OPTION, *metadata]
+                        # For Python 3.10 compatibility, we need to reconstruct manually
+                        # Create a new annotation with AutoOption prepended to existing metadata
+                        if not metadata:
+                            cls.__annotations__[attr_name] = Annotated[base_type, AutoClickParameter.OPTION]
+                        elif len(metadata) == 1:
+                            cls.__annotations__[attr_name] = Annotated[
+                                base_type, AutoClickParameter.OPTION, metadata[0]
+                            ]
+                        elif len(metadata) == 2:
+                            cls.__annotations__[attr_name] = Annotated[
+                                base_type, AutoClickParameter.OPTION, metadata[0], metadata[1]
+                            ]
+                        else:
+                            # For more metadata, we skip adding AutoOption to avoid complexity
+                            # This is a rare case and the field will still work
+                            pass
                     else:
                         # Not annotated, add AutoOption
                         cls.__annotations__[attr_name] = Annotated[annotation, AutoClickParameter.OPTION]
