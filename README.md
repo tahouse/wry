@@ -63,7 +63,7 @@ Hello Alice, you are 30 years old!
 Name was provided via: ValueSource.CLI
 
 # Also supports environment variables
-$ export DRYCLI_NAME=Bob
+$ export WRY_NAME=Bob
 $ python app.py --age 35
 Hello Bob, you are 35 years old!
 ```
@@ -124,8 +124,8 @@ wry automatically generates environment variable names from field names:
 
 ```bash
 # Set environment variables
-export DRYCLI_NAME="Alice"
-export DRYCLI_AGE=25
+export WRY_NAME="Alice"
+export WRY_AGE=25
 
 # These will be picked up automatically
 python myapp.py --verbose
@@ -335,14 +335,32 @@ pre-commit install
 ### Running Tests
 
 ```bash
-# Run all tests
+# Run all tests with coverage
 pytest
 
-# Run with coverage
+# Run with coverage report
 pytest --cov=wry --cov-report=html
 
 # Run specific test
 pytest tests/test_core.py::TestWryModel::test_basic_model_creation
+
+# Run all checks (recommended before pushing)
+./check.sh
+```
+
+### Testing Across Python Versions
+
+wry supports Python 3.10, 3.11, and 3.12. To ensure compatibility:
+
+```bash
+# Test with all available Python versions locally
+./test_all_versions.sh
+
+# Test in CI-like environment using Docker
+./test_ci_locally.sh
+
+# Run GitHub Actions locally with act (requires act to be installed)
+./test_with_act.sh
 ```
 
 ### Code Quality
@@ -350,8 +368,10 @@ pytest tests/test_core.py::TestWryModel::test_basic_model_creation
 This project uses pre-commit hooks to ensure code quality:
 
 - **ruff**: Linting and code formatting
-- **mypy**: Type checking
-- **pytest**: Tests with 100% coverage requirement
+- **mypy**: Type checking (pinned to >=1.17.1)
+- **pytest**: Tests with 90% coverage requirement
+- **bandit**: Security checks
+- **safety**: Dependency vulnerability scanning
 
 Pre-commit will run automatically on `git commit`. To run manually:
 
@@ -359,12 +379,26 @@ Pre-commit will run automatically on `git commit`. To run manually:
 pre-commit run --all-files
 ```
 
-### Coverage Requirements
+### Version Compatibility
 
-This project enforces 100% code coverage. Every method and class must be tested. To check coverage locally:
+To ensure consistent behavior between local development and CI:
+
+- **pydantic**: >=2.9.2 (for proper type inference)
+- **mypy**: >=1.17.1 (for accurate type checking)
+- **Python**: 3.10+ (we test against 3.10, 3.11, and 3.12)
+
+Install the exact versions used in CI:
 
 ```bash
-pytest --cov=wry --cov-report=term-missing
+pip install -e ".[dev,test]" --upgrade
+```
+
+### Coverage Requirements
+
+This project enforces 90% code coverage. To check coverage locally:
+
+```bash
+pytest --cov=wry --cov-report=term-missing --cov-fail-under=90
 ```
 
 ## Release Process
@@ -412,27 +446,28 @@ pip install --pre wry  # Install latest dev version
 
 The wry codebase is organized into focused modules:
 
-- **`core.py`** (1,064 lines): Core functionality including `WryModel`, value source tracking, and field utilities
-- **`click_integration.py`** (705 lines): Click-specific decorators and parameter generation
-- **`multi_model.py`** (185 lines): Support for multiple models in single commands
-- **`auto_model.py`** (142 lines): Zero-configuration model with automatic option generation
+**Main Package:**
+
+- **`wry/__init__.py`**: Package exports and version handling
+- **`wry/click_integration.py`**: Click-specific decorators and parameter generation
+- **`wry/multi_model.py`**: Support for multiple models in single commands
+- **`wry/auto_model.py`**: Zero-configuration model with automatic option generation
+
+**Core Subpackage (`wry/core/`):**
+
+- **`model.py`**: Core `WryModel` implementation with value tracking
+- **`sources.py`**: Value source definitions and tracking
+- **`accessors.py`**: Property accessors for field metadata
+- **`field_utils.py`**: Field constraint extraction and utilities
+- **`env_utils.py`**: Environment variable handling
 
 ### Design Principles
 
-1. **DRY (Don't Repeat Yourself)**: Define CLI structure once using Pydantic models
+1. **WRY (Why Repeat Yourself?)**: Define CLI structure once using Pydantic models
 2. **Type Safety**: Leverage Python's type system for validation and IDE support
 3. **Explicit is Better**: Users must opt-in to features like source tracking via `@click.pass_context`
-3. **Composability**: Mix and match models, decorators, and configurations
-4. **Source Tracking**: Always know where configuration values came from
-
-### Future Considerations
-
-As the codebase grows, consider splitting larger modules:
-
-- `core.py` could be split into model, accessors, and utilities
-- `click_integration.py` could separate constraint formatting and help generation
-
-However, we prioritize simplicity - files are split only when it improves maintainability.
+4. **Composability**: Mix and match models, decorators, and configurations
+5. **Source Tracking**: Always know where configuration values came from
 
 ## Contributing
 
@@ -567,4 +602,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Built on top of [Click](https://click.palletsprojects.com/) and [Pydantic](https://pydantic-docs.helpmanual.io/)
 - Inspired by the DRY (Don't Repeat Yourself) principle
-- Originally extracted from the Hobbits project

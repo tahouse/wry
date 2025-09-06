@@ -14,8 +14,8 @@
 
 ### Completed ✓
 
-- [x] Migrate core Pydantic functionality from hobbits
-- [x] Migrate Click integration from hobbits
+- [x] Migrate core Pydantic functionality
+- [x] Migrate Click integration
 - [x] Create example usage files
 - [x] Create comprehensive test suite
 - [x] Test the migrated code

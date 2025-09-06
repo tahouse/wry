@@ -25,9 +25,9 @@ classifiers = [
 keywords = ["cli", "pydantic", "click", "wry", "dry", "configuration", "type-safe"]
 dependencies = [
     "click>=8.0",
-    "pydantic>=2.0",
+    "pydantic>=2.9.2",  # Pin to minimum version that works with our type annotations
     "annotated-types>=0.5.0",
-    "pydantic-core>=2.0",
+    "pydantic-core>=2.23.4",  # Match pydantic 2.9.2 requirements
 ]
 
 [project.optional-dependencies]
@@ -36,7 +36,7 @@ dev = [
     "pytest-cov",
     "pytest-xdist",  # Parallel test execution
     "ruff",
-    "mypy",
+    "mypy>=1.17.1",  # Pin to version that properly detects redundant casts
     "build",
     "twine",
     "setuptools-scm>=8.0",  # Version management from git tags
