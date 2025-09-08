@@ -177,6 +177,14 @@ jobs:
           ./dist/*.tar.gz
           ./dist/*.whl
 
+    - name: Get previous tag
+      id: previous_tag
+      run: |
+        # Get the previous tag (excluding the current one)
+        PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -v '${{ github.ref_name }}' | head -n 1)
+        echo "previous_tag=$PREVIOUS_TAG" >> $GITHUB_OUTPUT
+        echo "Previous tag: $PREVIOUS_TAG"
+
     - name: Extract release notes from CHANGELOG
       id: release_notes
       run: |
@@ -185,6 +193,14 @@ jobs:
 
         # Extract release notes and save to file
         python scripts/extract_release_notes.py '${{ github.ref_name }}' > release_notes.md
+
+        # Add comparison link if we have a previous tag
+        if [ -n "${{ steps.previous_tag.outputs.previous_tag }}" ]; then
+          echo "" >> release_notes.md
+          echo "---" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.previous_tag.outputs.previous_tag }}...${{ github.ref_name }}" >> release_notes.md
+        fi
 
         # Read the content for the release body
         echo 'RELEASE_NOTES<<EOF' >> $GITHUB_ENV
