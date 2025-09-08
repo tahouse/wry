@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6] - 2025-01-08
+
+### Added
+
+- GitHub releases now include commit comparison links to previous releases
+- Development versions now use `.devN` format and show as pre-releases on PyPI
+
+### Changed
+
+- Switched setuptools-scm from `post-release` to `guess-next-dev` version scheme
+- Development versions now appear as pre-releases instead of regular releases on PyPI
+
 ## [0.1.5] - 2025-09-08
 
 ### Fixed
