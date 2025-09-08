@@ -10,10 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.5] - 2025-09-08
 
 ### Fixed
+
 - Restored PyPI publishing for development releases
 - CI/CD now correctly publishes both postN and release versions
 
 ### Changed
+
 - Improved CI/CD documentation
 
 ## [0.1.4] - 2025-09-08
