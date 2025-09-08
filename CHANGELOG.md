@@ -8,11 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+
 - Improved CI/CD documentation
 
 ## [0.1.4] - 2025-09-08
 
 ### Fixed
+
 - CI/CD workflow to skip fetching tags on main branch builds
 - Prevents version conflicts when tags are pushed shortly after commits
 - Ensures main branch builds always generate .postN development versions
@@ -20,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.3] - 2025-09-08
 
 ### Fixed
+
 - Package discovery configuration to properly install `wry` package in site-packages
 - ModuleNotFoundError when installing from PyPI due to incorrect package structure
 
