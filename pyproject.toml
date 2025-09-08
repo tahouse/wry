@@ -134,5 +134,7 @@ filterwarnings = [
 write_to = "wry/_version.py"
 fallback_version = "0.0.1.dev0"
 # Configure version string that includes git info in metadata
-version_scheme = "post-release"
+# Use "no-guess-dev" to generate .devN versions between releases
+# These show as pre-releases on PyPI (unlike .postN versions)
+version_scheme = "no-guess-dev"
 local_scheme = "no-local-version"
