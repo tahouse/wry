@@ -57,7 +57,7 @@ Issues = "https://github.com/tahouse/wry/issues"
 Documentation = "https://github.com/tahouse/wry#readme"
 
 [tool.setuptools.packages.find]
-where = ["wry"]
+include = ["wry*"]
 
 [tool.setuptools.package-data]
 wry = ["py.typed"]

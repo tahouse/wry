@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2025-09-08
+
+### Fixed
+- Package discovery configuration to properly install `wry` package in site-packages
+- ModuleNotFoundError when installing from PyPI due to incorrect package structure
+
 ## [0.1.2] - 2025-09-05
 
 ### Fixed
@@ -89,7 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial version as `drycli` package (before rename to `wry`)
 
-[Unreleased]: https://github.com/tahouse/wry/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/tahouse/wry/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/tahouse/wry/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/tahouse/wry/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/tahouse/wry/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/tahouse/wry/compare/v0.0.3...v0.1.0
