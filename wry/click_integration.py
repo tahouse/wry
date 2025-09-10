@@ -314,7 +314,7 @@ def generate_click_parameters(
     model_class: type[BaseModel],
     add_config_option: bool = True,
     strict: bool = True,
-) -> Callable[..., Any]:
+) -> Callable[[FC], FC]:
     """Generate Click options and arguments with smart auto-generation.
 
     This decorator automatically generates Click CLI parameters from a Pydantic
@@ -508,7 +508,7 @@ def generate_click_parameters(
         )
     )
 
-    def decorator(func: Callable[[FC], FC]) -> Callable[[FC], FC]:
+    def decorator(func: FC) -> FC:
         # Check for duplicate decorator application
         if hasattr(func, "_wry_models"):
             existing_models = getattr(func, "_wry_models", [])

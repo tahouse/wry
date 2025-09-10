@@ -3,11 +3,14 @@
 import json
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, ClassVar, TypeVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, cast
 
 import click
 from pydantic import BaseModel, ConfigDict
 from pydantic_core import PydanticUndefined
+
+if TYPE_CHECKING:
+    from click.decorators import FC
 
 from .accessors import (
     ConstraintsAccessor,
@@ -633,7 +636,7 @@ class WryModel(BaseModel):
         return result
 
     @classmethod
-    def generate_click_parameters(cls) -> Callable:
+    def generate_click_parameters(cls) -> "Callable[[FC], FC]":
         """Generate Click parameters decorator for this model.
 
         This is a convenience method that allows using the decorator

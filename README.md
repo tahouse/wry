@@ -197,8 +197,6 @@ class QuickConfig(AutoWryModel):
     age: int = Field(default=30, ge=0, le=120)
     email: str = Field(description="Your email")
 
-    # No need for Annotated[..., AutoOption]!
-
 @click.command()
 @generate_click_parameters(QuickConfig)
 def quickstart(config: QuickConfig):
