@@ -357,7 +357,11 @@ def generate_click_parameters(
                 field_type = AutoClickParameter.REQUIRED_OPTION
             elif item == AutoClickParameter.ARGUMENT:
                 field_type = AutoClickParameter.ARGUMENT
-            elif hasattr(item, "__module__") and "click" in str(item.__module__):
+            elif (
+                hasattr(item, "__module__")
+                and "click" in str(item.__module__)
+                and not isinstance(item, AutoClickParameter)
+            ):
                 click_parameter = item
                 break
 

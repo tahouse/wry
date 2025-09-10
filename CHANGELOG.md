@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.6] - 2025-01-08
+## [0.1.7] - 2025-09-09
+
+### Added
+
+- `generate_click_parameters` as a classmethod on `WryModel` and `AutoWryModel`
+  - Allows using `@MyModel.generate_click_parameters()` directly without imports
+  - Simplifies API and reduces import requirements in downstream projects
+
+## [0.1.6] - 2025-09-08
 
 ### Added
 
@@ -127,7 +135,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial version as `drycli` package (before rename to `wry`)
 
-[Unreleased]: https://github.com/tahouse/wry/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/tahouse/wry/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/tahouse/wry/compare/v0.1.6...v0.1.7
+[0.1.6]: https://github.com/tahouse/wry/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/tahouse/wry/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/tahouse/wry/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/tahouse/wry/compare/v0.1.2...v0.1.3

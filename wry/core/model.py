@@ -1,8 +1,9 @@
 """Core WryModel implementation."""
 
 import json
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, ClassVar, TypeVar
+from typing import Any, ClassVar, TypeVar, cast
 
 import click
 from pydantic import BaseModel, ConfigDict
@@ -416,7 +417,9 @@ class WryModel(BaseModel):
                 if field_info.default is not PydanticUndefined:
                     config_data[field_name] = TrackedValue(field_info.default, ValueSource.DEFAULT)
                 elif field_info.default_factory is not None:
-                    config_data[field_name] = TrackedValue(field_info.default_factory(), ValueSource.DEFAULT)
+                    config_data[field_name] = TrackedValue(
+                        cast(Callable[[], Any], field_info.default_factory)(), ValueSource.DEFAULT
+                    )
 
         return cls.create_with_sources(config_data)
 
@@ -495,7 +498,7 @@ class WryModel(BaseModel):
                 config_data[field_name] = TrackedValue(field_info.default, ValueSource.DEFAULT)
             elif field_info.default_factory is not None:
                 factory = field_info.default_factory
-                config_data[field_name] = TrackedValue(factory(), ValueSource.DEFAULT)
+                config_data[field_name] = TrackedValue(cast(Callable[[], Any], factory)(), ValueSource.DEFAULT)
 
         # 2. Override with environment values
         for field_name, value in env_values.items():
@@ -624,6 +627,29 @@ class WryModel(BaseModel):
                 if field_info.default is not PydanticUndefined:
                     result[field_name] = field_info.default
                 elif field_info.default_factory is not None:
-                    result[field_name] = field_info.default_factory()
+                    result[field_name] = cast(Callable[[], Any], field_info.default_factory)()
 
         return result
+
+    @classmethod
+    def generate_click_parameters(cls) -> Callable:
+        """Generate Click parameters decorator for this model.
+
+        This is a convenience method that allows using the decorator
+        directly from the model class without needing to import it.
+
+        Example:
+            ```python
+            @click.command()
+            @MyConfig.generate_click_parameters()
+            @click.pass_context
+            def cli(ctx, **kwargs):
+                config = MyConfig.from_click_context(ctx, **kwargs)
+            ```
+
+        Returns:
+            The generate_click_parameters decorator configured for this model
+        """
+        from ..click_integration import generate_click_parameters
+
+        return generate_click_parameters(cls)
