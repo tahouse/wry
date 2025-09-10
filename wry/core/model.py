@@ -3,7 +3,7 @@
 import json
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, ClassVar, TypeVar
+from typing import Any, ClassVar, TypeVar, cast
 
 import click
 from pydantic import BaseModel, ConfigDict
@@ -418,7 +418,7 @@ class WryModel(BaseModel):
                     config_data[field_name] = TrackedValue(field_info.default, ValueSource.DEFAULT)
                 elif field_info.default_factory is not None:
                     config_data[field_name] = TrackedValue(
-                        field_info.default_factory(),  # type: ignore[call-arg]
+                        cast(Callable[[], Any], field_info.default_factory)(),
                         ValueSource.DEFAULT,
                     )
 
@@ -499,7 +499,7 @@ class WryModel(BaseModel):
                 config_data[field_name] = TrackedValue(field_info.default, ValueSource.DEFAULT)
             elif field_info.default_factory is not None:
                 factory = field_info.default_factory
-                config_data[field_name] = TrackedValue(factory(), ValueSource.DEFAULT)  # type: ignore[call-arg]
+                config_data[field_name] = TrackedValue(cast(Callable[[], Any], factory)(), ValueSource.DEFAULT)
 
         # 2. Override with environment values
         for field_name, value in env_values.items():
@@ -628,7 +628,7 @@ class WryModel(BaseModel):
                 if field_info.default is not PydanticUndefined:
                     result[field_name] = field_info.default
                 elif field_info.default_factory is not None:
-                    result[field_name] = field_info.default_factory()  # type: ignore[call-arg]
+                    result[field_name] = cast(Callable[[], Any], field_info.default_factory)()
 
         return result
 

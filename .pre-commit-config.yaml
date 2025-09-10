@@ -28,13 +28,18 @@ repos:
         args: [--cov=wry, --cov-branch, --cov-report=xml, --cov-report=term-missing, --cov-fail-under=90]
         pass_filenames: false
         always_run: true
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.17.1
+    hooks:
       - id: mypy
-        name: mypy
-        entry: mypy
-        language: system
-        types: [python]
         args: [wry/]
         pass_filenames: false
+        additional_dependencies:
+          - pydantic>=2.9.2
+          - click>=8.0.0
+          - annotated-types>=0.6.0
+          - setuptools-scm>=8.0
 
 # Temporarily disabled - bandit has dependency issues in pre-commit
   # - repo: https://github.com/PyCQA/bandit
