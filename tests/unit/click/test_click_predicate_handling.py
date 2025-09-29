@@ -20,17 +20,17 @@ class TestPredicateHandling:
         # Lambda checking for specific strings
         check_foo = lambda x: "foo" in x
         desc = _extract_predicate_description(check_foo)
-        assert "foo" in desc
+        assert "contains" in desc and "foo" in desc
 
         # Lambda checking string start
         check_prefix = lambda x: x.startswith("prefix")
         desc = _extract_predicate_description(check_prefix)
-        assert "prefix" in desc
+        assert "starts with" in desc and "prefix" in desc
 
         # Lambda checking string end
         check_suffix = lambda x: x.endswith(".txt")
         desc = _extract_predicate_description(check_suffix)
-        assert ".txt" in desc
+        assert "ends with" in desc and ".txt" in desc
 
     def test_extract_from_lambda_with_numeric_comparisons(self):
         """Test extraction from lambdas with numeric comparisons."""

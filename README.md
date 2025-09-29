@@ -35,7 +35,7 @@ The simplest way to use wry is with `AutoWryModel`, which automatically generate
 ```python
 import click
 from pydantic import Field
-from wry import AutoWryModel, generate_click_parameters
+from wry import AutoWryModel
 
 class AppArgs(AutoWryModel):
     """Configuration for my app."""
@@ -45,15 +45,18 @@ class AppArgs(AutoWryModel):
     verbose: bool = Field(default=False, description="Verbose output")
 
 @click.command()
-@generate_click_parameters(AppArgs)
+@AppArgs.generate_click_parameters()
 def main(**kwargs):
     """My simple CLI application."""
+    # Create the model instance from kwargs
     config = AppArgs(**kwargs)
     click.echo(f"Hello {config.name}, you are {config.age} years old!")
 
 if __name__ == "__main__":
     main()
 ```
+
+**Note**: Currently, `generate_click_parameters()` passes individual parameters as kwargs to your function. You need to instantiate the model yourself. See the [Future Features](#future-features) section for a potential cleaner API.
 
 Run it:
 
@@ -76,7 +79,7 @@ wry can track where each configuration value came from. You have two options:
 
 ```python
 @click.command()
-@generate_click_parameters(AppArgs)
+@AppArgs.generate_click_parameters()
 def main(**kwargs):
     # Simple instantiation - no source tracking
     config = AppArgs(**kwargs)
@@ -87,7 +90,7 @@ def main(**kwargs):
 
 ```python
 @click.command()
-@generate_click_parameters(AppArgs)
+@AppArgs.generate_click_parameters()
 @click.pass_context
 def main(ctx, **kwargs):
     # Full source tracking with context
@@ -164,7 +167,7 @@ Use multiple Pydantic models in a single command:
 ```python
 from typing import Annotated
 import click
-from wry import WryModel, AutoOption, generate_click_parameters, multi_model
+from wry import WryModel, AutoOption, multi_model, create_models
 
 class ServerConfig(WryModel):
     host: Annotated[str, AutoOption] = "localhost"
@@ -176,7 +179,13 @@ class DatabaseArgs(WryModel):
 
 @click.command()
 @multi_model(ServerConfig, DatabaseConfig)
-def serve(server: ServerConfig, database: DatabaseConfig):
+@click.pass_context
+def serve(ctx, **kwargs):
+    # Create model instances
+    configs = create_models(ctx, kwargs, ServerConfig, DatabaseConfig)
+    server = configs[ServerConfig]
+    database = configs[DatabaseConfig]
+
     print(f"Starting server at {server.host}:{server.port}")
     print(f"Database: {database.db_url} (pool size: {database.pool_size})")
 ```
@@ -187,7 +196,7 @@ Automatically generate options for all fields:
 
 ```python
 import click
-from wry import AutoWryModel, generate_click_parameters
+from wry import AutoWryModel
 from pydantic import Field
 
 class QuickConfig(AutoWryModel):
@@ -198,7 +207,7 @@ class QuickConfig(AutoWryModel):
     email: str = Field(description="Your email")
 
 @click.command()
-@generate_click_parameters(QuickConfig)
+@QuickConfig.generate_click_parameters()
 def quickstart(config: QuickConfig):
     print(f"Hello {config.name}!")
 ```
@@ -261,8 +270,8 @@ By default, `generate_click_parameters` runs in strict mode to prevent common mi
 
 ```python
 @click.command()
-@generate_click_parameters(Config)  # strict=True by default
-@generate_click_parameters(Config)  # ERROR: Duplicate decorator detected!
+@Config.generate_click_parameters()  # strict=True by default
+@Config.generate_click_parameters()  # ERROR: Duplicate decorator detected!
 def main(**kwargs):
     pass
 ```
@@ -270,7 +279,7 @@ def main(**kwargs):
 To allow multiple decorators (not recommended):
 
 ```python
-@generate_click_parameters(Config, strict=False)
+@Config.generate_click_parameters(strict=False)
 ```
 
 ### Manual Field Control
@@ -596,7 +605,33 @@ We welcome contributions! Please follow these guidelines to ensure a smooth proc
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## Future Features
+
+### Automatic Model Instantiation (Proof of Concept)
+
+We're exploring a cleaner API that would automatically instantiate models and pass them to your function. See `examples/auto_instantiate_poc.py` for a working proof of concept:
+
+```python
+# Potential future syntax
+@click.command()
+@AppConfig.click_command()  # or @auto_instantiate(AppConfig)
+def main(config: AppConfig):
+    """The decorator would handle instantiation automatically."""
+    click.echo(f"Hello {config.name}!")
+    # Source tracking would work automatically too!
+```
+
+This would:
+
+- Automatically handle `@click.pass_context` when needed for source tracking
+- Instantiate the model and pass it with the correct parameter name
+- Support multiple models in a single command
+- Make the API more intuitive and similar to other libraries
+
+If you're interested in this feature, please provide feedback!
+
 ## Acknowledgments
 
 - Built on top of [Click](https://click.palletsprojects.com/) and [Pydantic](https://pydantic-docs.helpmanual.io/)
 - Inspired by the DRY (Don't Repeat Yourself) principle
+We'd also like to acknowledgme `pydanclick`, which uses a similar clean syntax (no kwargs to command functions). The code for this feature will be independently written given that `wry` supports source tracking, constraint help text creation, instantiation from config files, and several other features not supported by `pydanclick`.

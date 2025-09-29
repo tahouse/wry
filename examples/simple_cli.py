@@ -4,7 +4,7 @@
 import click
 from pydantic import Field
 
-from wry import AutoWryModel, generate_click_parameters
+from wry import AutoWryModel
 
 
 class AppConfig(AutoWryModel):
@@ -16,8 +16,9 @@ class AppConfig(AutoWryModel):
     verbose: bool = Field(default=False, description="Enable verbose output")
 
 
+# Current syntax - you need to handle kwargs yourself
 @click.command()
-@generate_click_parameters(AppConfig)
+@AppConfig.generate_click_parameters()
 def main(**kwargs):
     """A simple greeting application."""
     # Direct instantiation - simple but no accurate source tracking
@@ -29,7 +30,21 @@ def main(**kwargs):
         click.echo("\nConfiguration sources (limited accuracy without context):")
         click.echo(f"  name came from: {config.source.name}")
         click.echo(f"  age came from: {config.source.age}")
-        click.echo("\nNote: For accurate source tracking, see intermediate_example.py")
+        click.echo("\nNote: For accurate source tracking, use @click.pass_context:")
+        click.echo("    @click.command()")
+        click.echo("    @AppConfig.generate_click_parameters()")
+        click.echo("    @click.pass_context")
+        click.echo("    def main(ctx, **kwargs):")
+        click.echo("        config = AppConfig.from_click_context(ctx, **kwargs)")
+
+
+# TODO: Future syntax (see auto_instantiate_poc.py for proof of concept)
+# @click.command()
+# @AppConfig.click_command()  # or @auto_instantiate(AppConfig)
+# def main_future(config: AppConfig):
+#     """This would automatically instantiate AppConfig from kwargs."""
+#     click.echo(f"Hello, {config.name}!")
+#     # Source tracking would work automatically!
 
 
 if __name__ == "__main__":

@@ -11,8 +11,8 @@ class TestLambdaParsing:
         # Lambda checking if value is in a list
         valid_values = lambda x: x in ["foo", "bar", "baz"]
         desc = _extract_predicate_description(valid_values)
-        # The function returns a more user-friendly format
-        assert 'must be one of ["foo", "bar", "baz"]' == desc
+        # The function should extract the list membership pattern
+        assert desc == 'must be one of ["foo", "bar", "baz"]'
 
     def test_lambda_with_malformed_list(self):
         """Test lambda with malformed list syntax."""
@@ -37,14 +37,14 @@ class TestLambdaParsing:
         # Lambda with nested parentheses
         nested = lambda x: x.startswith("(test)")
         desc = _extract_predicate_description(nested)
-        assert "(test" in desc  # Should at least extract part of the pattern
+        # Should extract the startswith pattern
+        assert "starts with" in desc and "(test" in desc
 
         # Lambda with special characters
         special = lambda x: "@" in x and "." in x
         desc = _extract_predicate_description(special)
-        # Should return something meaningful
-        assert desc is not None
-        assert "predicate:" in desc or "@" in desc
+        # Should extract the containment pattern
+        assert "contains" in desc and "@" in desc
 
     def test_lambda_source_extraction_failure(self):
         """Test when lambda source can't be extracted."""

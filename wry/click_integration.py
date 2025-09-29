@@ -381,6 +381,21 @@ def generate_click_parameters(
             # Determine Click type from annotation
             base_type = get_args(annotation)[0]
 
+            # Check if this is a list type that should support multiple=True
+            is_list_type = False
+            if hasattr(base_type, "__origin__"):
+                # Handle typing.List, typing.Tuple, etc.
+                if base_type.__origin__ is list or base_type.__origin__ is tuple:
+                    is_list_type = True
+            elif hasattr(base_type, "__args__") and base_type.__args__:
+                # Handle newer Python versions with | syntax
+                if get_origin(base_type) is list or get_origin(base_type) is tuple:
+                    is_list_type = True
+
+            # Add multiple=True for list types
+            if is_list_type:
+                click_kwargs["multiple"] = True
+
             # Handle Optional types - extract the actual type
             from typing import Union
 
@@ -482,7 +497,9 @@ def generate_click_parameters(
             if hasattr(click_parameter, "__name__") and "argument" in str(click_parameter):
                 arguments.append(extract_and_modify_argument_decorator(click_parameter))
             else:
-                options.append(click_parameter)
+                # Only append if it's actually a Click decorator, not an AutoClickParameter
+                if callable(click_parameter) and not isinstance(click_parameter, AutoClickParameter):
+                    options.append(click_parameter)
 
     # We'll conditionally add these in the decorator to avoid duplicates
     config_and_env_options: list[ClickParameterDecorator[Any]] = []

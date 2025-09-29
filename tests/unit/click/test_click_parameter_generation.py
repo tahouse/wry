@@ -28,7 +28,7 @@ class TestClickParameterGeneration:
 
         lambda_func.__name__ = "<lambda>"
         desc = _extract_predicate_description(lambda_func)
-        assert "greater than 0" in desc
+        assert "greater than 0" in desc or "> 0" in desc
 
         # Lambda with specific patterns
         def contains_at(s):

@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.9] - 2025-09-29
+
+### Added
+
+- **Automatic multiple option support for list types**
+  - `list[str]` and `tuple[str, ...]` fields now automatically generate Click options with `multiple=True`
+  - Supports both `AutoWryModel` and `WryModel` with proper type conversion
+  - Handles edge cases: empty lists, single values, and multiple values
+  - Works with different data types: `list[int]`, `list[str]`, etc.
+  - Maintains type safety: Click tuples are correctly converted to Python lists
+
+### Fixed
+
+- **Variadic argument bug resolution**
+  - Fixed issue where variadic Click arguments (`nargs=-1`) were incorrectly converted to strings
+  - Variadic arguments now preserve their tuple type when used with `@generate_click_parameters`
+  - Resolves duplicate parameter warnings and validation errors
+
+### Testing
+
+- **Comprehensive test coverage for multiple options**
+  - Added `tests/unit/test_multiple_option_bug.py` with 6 test cases
+  - Added `tests/unit/test_variadic_argument_bug.py` with 3 test cases
+  - Tests cover AutoWryModel, WryModel, edge cases, type validation, and different data types
+  - All tests pass with proper type checking and validation
+
 ## [0.1.8] - 2025-09-10
 
 ### Fixed
@@ -144,7 +170,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial version as `drycli` package (before rename to `wry`)
 
-[Unreleased]: https://github.com/tahouse/wry/compare/v0.1.8...HEAD
+[Unreleased]: https://github.com/tahouse/wry/compare/v0.1.9...HEAD
+[0.1.9]: https://github.com/tahouse/wry/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/tahouse/wry/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/tahouse/wry/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/tahouse/wry/compare/v0.1.5...v0.1.6

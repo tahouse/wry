@@ -12,10 +12,9 @@ class TestLambdaErrorHandling:
         # This happens when split doesn't produce expected parts
         malformed_lambda = lambda x: x.startswith()  # Missing argument
 
-        # Should handle gracefully
+        # Should handle gracefully - may extract partial pattern
         result = _extract_predicate_description(malformed_lambda)
-        assert result is not None  # Should return something, not crash
-        # Extracts "starts with" even though the lambda is malformed
+        assert result is not None
         assert "starts" in result.lower()
 
     def test_lambda_with_valueerror_in_list_parsing(self):
@@ -25,7 +24,7 @@ class TestLambdaErrorHandling:
 
         # This should be handled gracefully
         result = _extract_predicate_description(complex_list_lambda)
-        assert result is not None
+        assert result == 'must be one of ["a", "b", "c"]'
 
     def test_lambda_with_complex_nested_expression(self):
         """Test lambda with complex nested expressions that might fail parsing."""
@@ -44,13 +43,14 @@ class TestLambdaErrorHandling:
 
         result = _extract_predicate_description(lambda_with_complex_value)
         assert result is not None
+        # Should extract the comparison even with complex value
+        assert "greater than" in result.lower() or ">" in result
 
     def test_lambda_string_containment_edge_case(self):
         """Test string containment pattern edge cases."""
         # Test " in x" pattern
         contains_lambda = lambda x: "test" in x
         result = _extract_predicate_description(contains_lambda)
-        assert result is not None
         assert "contains" in result or "in" in result
 
     def test_lambda_with_empty_string_after_split(self):
@@ -59,5 +59,4 @@ class TestLambdaErrorHandling:
         edge_lambda = lambda x: x == ""
 
         result = _extract_predicate_description(edge_lambda)
-        assert result is not None
         assert "==" in result or "equal" in result

@@ -6,7 +6,7 @@ from typing import Annotated
 import click
 from pydantic import Field
 
-from wry import AutoOption, WryModel, generate_click_parameters
+from wry import AutoOption, WryModel
 from wry.auto_model import AutoWryModel, create_auto_model
 from wry.click_integration import AutoClickParameter
 
@@ -71,10 +71,11 @@ def cli():
 
 
 @cli.command("traditional")
-@generate_click_parameters(TraditionalConfig)
-def traditional_cmd(**kwargs):
+@TraditionalConfig.generate_click_parameters()
+@click.pass_context
+def traditional_cmd(ctx, **kwargs):
     """Traditional approach with explicit annotations."""
-    config = TraditionalConfig.from_click_context(**kwargs)
+    config = TraditionalConfig.from_click_context(ctx, **kwargs)
     click.echo("Traditional Config:")
     click.echo(f"  Host: {config.host}:{config.port}")
     click.echo(f"  Debug: {config.debug}")
@@ -82,10 +83,11 @@ def traditional_cmd(**kwargs):
 
 
 @cli.command("auto")
-@generate_click_parameters(AutoConfig)
-def auto_cmd(**kwargs):
+@AutoConfig.generate_click_parameters()
+@click.pass_context
+def auto_cmd(ctx, **kwargs):
     """Auto approach - much cleaner!"""
-    config = AutoConfig.from_click_context(**kwargs)
+    config = AutoConfig.from_click_context(ctx, **kwargs)
     click.echo("Auto Config (same result, less code!):")
     click.echo(f"  Host: {config.host}:{config.port}")
     click.echo(f"  Debug: {config.debug}")
@@ -96,10 +98,11 @@ def auto_cmd(**kwargs):
 
 
 @cli.command("mixed")
-@generate_click_parameters(MixedConfig)
-def mixed_cmd(**kwargs):
+@MixedConfig.generate_click_parameters()
+@click.pass_context
+def mixed_cmd(ctx, **kwargs):
     """Mixed approach with overrides."""
-    config = MixedConfig.from_click_context(**kwargs)
+    config = MixedConfig.from_click_context(ctx, **kwargs)
     click.echo("Mixed Config:")
     click.echo(f"  Config file: {config.config_file}")
     click.echo(f"  Host: {config.host}:{config.port}")
@@ -108,10 +111,11 @@ def mixed_cmd(**kwargs):
 
 
 @cli.command("dynamic")
-@generate_click_parameters(DynamicConfig)
-def dynamic_cmd(**kwargs):
+@DynamicConfig.generate_click_parameters()
+@click.pass_context
+def dynamic_cmd(ctx, **kwargs):
     """Dynamic model creation."""
-    config = DynamicConfig.from_click_context(**kwargs)
+    config = DynamicConfig.from_click_context(ctx, **kwargs)
     click.echo("Dynamic Config:")
     click.echo(f"  API Key: {'***' if config.api_key else 'Not set'}")
     click.echo(f"  Endpoint: {config.endpoint}")
@@ -148,29 +152,36 @@ def help_comparison():
 
 
 if __name__ == "__main__":
-    # Test the commands
-    from click.testing import CliRunner
+    import sys
 
-    runner = CliRunner()
+    # If no arguments provided, run the demo
+    if len(sys.argv) == 1:
+        # Test the commands
+        from click.testing import CliRunner
 
-    print("=== Traditional vs Auto Comparison ===\n")
+        runner = CliRunner()
 
-    # Show help for traditional
-    result = runner.invoke(traditional_cmd, ["--help"])
-    print("Traditional command help:")
-    print(result.output)
+        print("=== Traditional vs Auto Comparison ===\n")
 
-    # Show help for auto (should be identical!)
-    result = runner.invoke(auto_cmd, ["--help"])
-    print("\nAuto command help (same options, less code!):")
-    print(result.output)
+        # Show help for traditional
+        result = runner.invoke(traditional_cmd, ["--help"])
+        print("Traditional command help:")
+        print(result.output)
 
-    # Test mixed approach
-    print("\n=== Mixed Approach Test ===")
-    result = runner.invoke(mixed_cmd, ["config.yaml", "-vvv", "--workers", "8"])
-    print(result.output)
+        # Show help for auto (should be identical!)
+        result = runner.invoke(auto_cmd, ["--help"])
+        print("\nAuto command help (same options, less code!):")
+        print(result.output)
 
-    # Test dynamic
-    print("\n=== Dynamic Model Test ===")
-    result = runner.invoke(dynamic_cmd, ["--api-key", "secret", "--retry-count", "5"])
-    print(result.output)
+        # Test mixed approach
+        print("\n=== Mixed Approach Test ===")
+        result = runner.invoke(mixed_cmd, ["config.yaml", "-vvv", "--workers", "8"])
+        print(result.output)
+
+        # Test dynamic
+        print("\n=== Dynamic Model Test ===")
+        result = runner.invoke(dynamic_cmd, ["--api-key", "secret", "--retry-count", "5"])
+        print(result.output)
+    else:
+        # Run the CLI normally
+        cli()
