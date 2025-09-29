@@ -482,17 +482,20 @@ We welcome contributions! Please follow these guidelines to ensure a smooth proc
 
 ### Development Setup
 
-To ensure consistency between local development and CI environments, we use pinned dependencies:
+We use Poetry for dependency management to ensure consistent environments:
 
 ```bash
-# Install development dependencies with exact versions
-pip install -r requirements-dev.txt
+# Install Poetry (if not already installed)
+curl -sSL https://install.python-poetry.org | python3 -
 
-# Install the package in editable mode
-pip install -e .
+# Install dependencies (including dev dependencies)
+poetry install
+
+# Activate the virtual environment
+poetry shell
 ```
 
-**Important**: Always use `requirements-dev.txt` for development to ensure your local environment matches CI/CD.
+**Important**: Poetry automatically creates an isolated virtual environment and uses `poetry.lock` to ensure everyone has the exact same dependencies.
 
 ### Getting Started
 
@@ -537,13 +540,13 @@ pip install -e .
 
    ```bash
    # Run tests
-   pytest
+   poetry run pytest
 
    # Check coverage (must be 100%)
-   pytest --cov=wry --cov-report=term-missing
+   poetry run pytest --cov=wry --cov-report=term-missing
 
    # Run linting
-   pre-commit run --all-files
+   poetry run pre-commit run --all-files
    ```
 
 4. **Commit your changes**:

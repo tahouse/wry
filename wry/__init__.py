@@ -46,7 +46,7 @@ Example:
 Coming soon - this package is under active development.
 """
 
-# Version is managed by setuptools-scm from git tags
+# Version is managed by poetry-dynamic-versioning from git tags
 try:
     from ._version import __commit_id__, __version__
 
@@ -55,27 +55,10 @@ try:
     if __commit_id__:
         __version_full__ += f"+{__commit_id__}"
 except ImportError:
-    # Fallback for development/editable installs
-    try:
-        # Try to get version dynamically for editable installs
-        from setuptools_scm import get_version
-
-        __version__ = get_version(root="../..", relative_to=__file__)
-        # Extract commit hash from version if present
-        if "+" in __version__ and "g" in __version__:
-            # Version like "0.0.2+g1234567" or "0.0.2.dev1+g1234567"
-            __commit_id__ = __version__.split("+")[-1].split(".")[0]
-            __version_full__ = __version__
-        else:
-            __commit_id__ = None
-            __version_full__ = __version__
-        # Clean version for consistency
-        __version__ = __version__.split("+")[0]
-    except Exception:
-        # Ultimate fallback
-        __version__ = "0.0.1-dev"
-        __version_full__ = __version__
-        __commit_id__ = None
+    # Fallback for development when _version.py is not generated
+    __version__ = "0.0.0"
+    __version_full__ = __version__
+    __commit_id__ = None
 
 __author__ = "Tyler House"
 __email__ = "26489166+tahouse@users.noreply.github.com"

@@ -1,15 +1,14 @@
-[build-system]
-requires = ["setuptools>=61.0", "wheel", "setuptools-scm>=8.0"]
-build-backend = "setuptools.build_meta"
-
-[project]
+[tool.poetry]
 name = "wry"
-dynamic = ["version"]
+version = "0.0.0"  # Placeholder - actual version comes from git tags via poetry-dynamic-versioning
 description = "Why Repeat Yourself? - Define your CLI once with Pydantic models"
-authors = [{name = "Tyler House", email = "26489166+tahouse@users.noreply.github.com"}]
+authors = ["Tyler House <26489166+tahouse@users.noreply.github.com>"]
 readme = "README.md"
-license = {text = "MIT"}
-requires-python = ">=3.10"
+license = "MIT"
+homepage = "https://github.com/tahouse/wry"
+repository = "https://github.com/tahouse/wry"
+documentation = "https://github.com/tahouse/wry#readme"
+keywords = ["cli", "pydantic", "click", "wry", "dry", "configuration", "type-safe"]
 classifiers = [
     "Development Status :: 1 - Planning",
     "Intended Audience :: Developers",
@@ -22,46 +21,56 @@ classifiers = [
     "Topic :: System :: System Shells",
     "Topic :: Utilities",
 ]
-keywords = ["cli", "pydantic", "click", "wry", "dry", "configuration", "type-safe"]
-dependencies = [
-    "click>=8.0",
-    "pydantic>=2.9.2",  # Pin to minimum version that works with our type annotations
-    "annotated-types>=0.5.0",
-    "pydantic-core>=2.23.4",  # Match pydantic 2.9.2 requirements
+packages = [{include = "wry"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+click = "^8.0"
+pydantic = "^2.9.2"
+annotated-types = "^0.6.0"
+pydantic-core = "^2.23.4"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.2"
+pytest-cov = "^7.0.0"
+pytest-xdist = "^3.8.0"
+coverage = {extras = ["toml"], version = "^7.10.7"}
+ruff = "^0.13.2"
+mypy = "^1.18.2"
+build = "^1.2.1"
+twine = "^6.0.0"
+pre-commit = "^3.8.0"
+safety = "^3.2.3"
+bandit = {extras = ["toml"], version = "^1.7.5"}
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "pep440"
+pattern = "^v(?P<base>\\d+\\.\\d+\\.\\d+)"
+format-jinja = """
+    {%- if distance == 0 -%}
+        {{ serialize_pep440(base, stage, revision) }}
+    {%- elif revision is not none -%}
+        {{ serialize_pep440(base, stage, revision + 1, dev=distance, metadata=[commit]) }}
+    {%- else -%}
+        {{ serialize_pep440(bump_version(base), stage, revision, dev=distance, metadata=[commit]) }}
+    {%- endif -%}
+"""
+
+[tool.poetry-dynamic-versioning.substitution]
+files = ["wry/_version.py"]
+patterns = [
+    "(^__version__\\s*(?::.*?)?=\\s*['\"])[^'\"]*(['\"])",
+    "(^__version_tuple__\\s*(?::.*?)?=\\s*)\\(.*?\\)",
+    "(^__commit_id__\\s*(?::.*?)?=\\s*)[^#]*"
 ]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=6.0",
-    "pytest-cov",
-    "pytest-xdist",  # Parallel test execution
-    "ruff",
-    "mypy>=1.17.1",  # Pin to version that properly detects redundant casts
-    "build",
-    "twine",
-    "setuptools-scm>=8.0",  # Version management from git tags
-    "pre-commit",           # Pre-commit hooks for quality gates
-    "safety",               # Security vulnerability scanning
-    "bandit[toml]",         # Security linting
-]
-test = [
-    "pytest>=6.0",
-    "pytest-cov",
-    "pytest-xdist",
-]
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
 
-[project.urls]
-Homepage = "https://github.com/tahouse/wry"
-Repository = "https://github.com/tahouse/wry"
-Issues = "https://github.com/tahouse/wry/issues"
-Documentation = "https://github.com/tahouse/wry#readme"
-
-[tool.setuptools.packages.find]
-include = ["wry*"]
-
-[tool.setuptools.package-data]
-wry = ["py.typed"]
-
+# Keep existing tool configurations
 [tool.ruff]
 target-version = "py310"
 line-length = 120
@@ -100,41 +109,49 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 warn_unreachable = true
+strict_optional = true
 strict_equality = true
+extra_checks = true
+
+# Per-module options
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+disallow_untyped_decorators = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-python_files = ["test_*.py"]
+python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = [
-    "--strict-markers",
-    "--strict-config",
-    "--verbose",
-    "--tb=short",
-    "--cov=wry",
-    "--cov-report=term-missing",
-    "--cov-report=html",
-    "--cov-report=xml",
-    "--cov-branch",
-    "--cov-fail-under=90",
-]
+addopts = "-ra -q --strict-markers --cov=wry --cov-report=term-missing --cov-report=html --cov-report=xml"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
 ]
-filterwarnings = [
-    "error",
-    "ignore::UserWarning",
-    "ignore::DeprecationWarning",
+
+[tool.coverage.run]
+branch = true
+source = ["wry"]
+omit = [
+    "tests/*",
+    "wry/_version.py",
 ]
 
-[tool.setuptools_scm]
-# Get version from git tags
-write_to = "wry/_version.py"
-fallback_version = "0.0.1.dev0"
-# Configure version string that includes git info in metadata
-# Use "guess-next-dev" to generate next patch .devN versions between releases
-# These show as pre-releases on PyPI (unlike .postN versions)
-version_scheme = "guess-next-dev"
-local_scheme = "no-local-version"
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if TYPE_CHECKING:",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.bandit]
+targets = ["wry"]
+exclude_dirs = ["tests", "examples"]
+skips = ["B101"]  # assert_used - needed for type checking

@@ -29,14 +29,10 @@ class TestVersionParsingEdgeCases:
 
                 # Should fall back to default version
                 assert hasattr(wry, "__version__")
-                # With setuptools-scm, version is always available
-                assert wry.__version__ != "0.0.0"
-                assert "." in wry.__version__  # Should have a valid version
-                # __version_info__ may not be available if version parsing fails
-                if hasattr(wry, "__version_info__"):
-                    # Version info should be a tuple of at least 3 numbers
-                    assert len(wry.__version_info__) >= 3
-                    assert isinstance(wry.__version_info__[0], int)
+                # With poetry-dynamic-versioning, falls back to placeholder
+                assert wry.__version__ == "0.0.0"
+                assert hasattr(wry, "__commit_id__")
+                assert wry.__commit_id__ is None
 
     def test_version_module_missing_version(self):
         """Test when _version module exists but has no __version__."""
@@ -53,9 +49,10 @@ class TestVersionParsingEdgeCases:
 
             import wry
 
-            # Should use fallback - but with setuptools-scm, version is always available
-            assert wry.__version__ != "0.0.0"
-            assert "." in wry.__version__
+            # Should use fallback version
+            assert wry.__version__ == "0.0.0"
+            assert hasattr(wry, "__commit_id__")
+            assert wry.__commit_id__ is None
 
 
 class TestImportEdgeCases:
