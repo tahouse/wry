@@ -22,7 +22,7 @@ mypy==1.18.2
 mypy_extensions==1.1.0
 
 # Type stubs
-types-setuptools==75.1.0.20241030
+types-setuptools==75.1.0.20241014
 
 # Pre-commit (for CI)
 pre-commit==3.8.0
