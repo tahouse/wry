@@ -332,11 +332,14 @@ cd wry
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install in development mode
-pip install -e ".[dev,test]"
+# Install Poetry (if not already installed)
+pip install poetry
+
+# Install all dependencies in development mode
+poetry install
 
 # Install pre-commit hooks
-pre-commit install
+poetry run pre-commit install
 ```
 
 ### Running Tests
@@ -397,7 +400,8 @@ To ensure consistent behavior between local development and CI:
 Install the exact versions used in CI:
 
 ```bash
-pip install -e ".[dev,test]" --upgrade
+poetry update
+poetry install
 ```
 
 ### Coverage Requirements
@@ -497,6 +501,29 @@ poetry shell
 
 **Important**: Poetry automatically creates an isolated virtual environment and uses `poetry.lock` to ensure everyone has the exact same dependencies.
 
+### Common Poetry Commands
+
+```bash
+# Install dependencies from lock file
+poetry install
+
+# Update dependencies within version constraints
+poetry update
+
+# Add a new dependency
+poetry add package-name
+
+# Add a development dependency
+poetry add --group dev package-name
+
+# Show installed packages
+poetry show
+
+# Run commands in the Poetry environment
+poetry run python script.py
+poetry run pytest
+```
+
 ### Getting Started
 
 1. **Fork the repository** on GitHub
@@ -524,10 +551,9 @@ poetry shell
 1. **Set up development environment**:
 
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -e ".[dev,test]"
-   pre-commit install
+   poetry install        # Creates venv and installs all dependencies
+   poetry shell          # Activate the virtual environment
+   poetry run pre-commit install  # Set up git hooks
    ```
 
 2. **Make your changes**:

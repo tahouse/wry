@@ -60,11 +60,6 @@ format-jinja = """
 
 [tool.poetry-dynamic-versioning.substitution]
 files = ["wry/_version.py"]
-patterns = [
-    "(^__version__\\s*(?::.*?)?=\\s*['\"])[^'\"]*(['\"])",
-    "(^__version_tuple__\\s*(?::.*?)?=\\s*)\\(.*?\\)",
-    "(^__commit_id__\\s*(?::.*?)?=\\s*)[^#]*"
-]
 
 [build-system]
 requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
