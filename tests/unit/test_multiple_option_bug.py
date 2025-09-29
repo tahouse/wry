@@ -330,6 +330,7 @@ class TestMultipleOptionBug:
         assert "Type: <class 'tuple'>" in result.output
         assert "Type: <class 'list'>" in result.output
         # Check that both int and string values are handled correctly
+        # The test specifies type=int, so Click should convert to integers
         assert "Raw int_values from Click: (1, 2)" in result.output
         assert "Raw str_values from Click: ('a', 'b')" in result.output
         assert "Config int_values: [1, 2]" in result.output
