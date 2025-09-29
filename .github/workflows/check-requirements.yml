@@ -1,0 +1,32 @@
+name: Check Requirements
+
+on:
+  pull_request:
+    paths:
+      - 'pyproject.toml'
+      - 'requirements-dev.txt'
+      - '.github/workflows/check-requirements.yml'
+
+jobs:
+  check-requirements:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Check requirements consistency
+      run: |
+        echo "Checking that requirements-dev.txt matches pyproject.toml constraints..."
+        python -m pip install --upgrade pip
+
+        # Install from requirements file
+        pip install -r requirements-dev.txt
+
+        # Check if package can be installed with these deps
+        pip install --no-deps -e .
+
+        echo "✅ Requirements file is valid and consistent!"

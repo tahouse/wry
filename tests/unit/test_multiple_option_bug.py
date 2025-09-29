@@ -285,9 +285,9 @@ class TestMultipleOptionBug:
             str_values: list[str] = Field(default=[], description="String values")
 
         @click.command()
+        @generate_click_parameters(TestArgs, strict=False)
         @click.option("--int-values", multiple=True, type=int)
         @click.option("--str-values", multiple=True)
-        @generate_click_parameters(TestArgs, strict=False)
         @click.pass_context
         def test_command(ctx: click.Context, int_values: tuple[int, ...], str_values: tuple[str, ...], **kwargs):
             """Test command with different list types."""
@@ -330,7 +330,7 @@ class TestMultipleOptionBug:
         assert "Type: <class 'tuple'>" in result.output
         assert "Type: <class 'list'>" in result.output
         # Check that both int and string values are handled correctly
-        # The test specifies type=int, so Click should convert to integers
+        # With Click 8.3.0+, type=int properly converts values to integers
         assert "Raw int_values from Click: (1, 2)" in result.output
         assert "Raw str_values from Click: ('a', 'b')" in result.output
         assert "Config int_values: [1, 2]" in result.output

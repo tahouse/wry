@@ -39,7 +39,7 @@ class TestClickTypeHandling:
 
         # BOOL type for optional bool
         assert "optional_bool" in params_by_name
-        assert params_by_name["optional_bool"].type is click.BOOL
+        assert isinstance(params_by_name["optional_bool"].type, click.types.BoolParamType)
 
         # String is Click's default, might not have explicit type
         assert "optional_str" in params_by_name
@@ -62,7 +62,7 @@ class TestClickTypeHandling:
 
         assert params_by_name["int_field"].type == click.INT
         assert params_by_name["float_field"].type == click.FLOAT
-        assert params_by_name["bool_field"].type is click.BOOL
+        assert isinstance(params_by_name["bool_field"].type, click.types.BoolParamType)
         # String might use default or click.STRING
 
     def test_custom_type_handling(self):

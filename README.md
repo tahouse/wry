@@ -480,6 +480,20 @@ The wry codebase is organized into focused modules:
 
 We welcome contributions! Please follow these guidelines to ensure a smooth process.
 
+### Development Setup
+
+To ensure consistency between local development and CI environments, we use pinned dependencies:
+
+```bash
+# Install development dependencies with exact versions
+pip install -r requirements-dev.txt
+
+# Install the package in editable mode
+pip install -e .
+```
+
+**Important**: Always use `requirements-dev.txt` for development to ensure your local environment matches CI/CD.
+
 ### Getting Started
 
 1. **Fork the repository** on GitHub
