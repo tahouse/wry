@@ -336,6 +336,7 @@ def generate_click_parameters(
     """
     arguments: list[ClickParameterDecorator[Any]] = []  # Arguments must come first
     options: list[ClickParameterDecorator[Any]] = []  # Options come after arguments
+    argument_docs: list[tuple[str, str]] = []  # Track (arg_name, description) for docstring injection
     type_hints = get_type_hints(model_class, include_extras=True)
 
     for field_name, field_info in model_class.model_fields.items():
@@ -502,6 +503,10 @@ def generate_click_parameters(
             # Note: required=False to allow --config to replace arg
             arguments.append(click.argument(argument_name, **click_kwargs, required=False))
 
+            # Track argument description for docstring injection
+            if field_info.description:
+                argument_docs.append((argument_name.upper(), field_info.description))
+
         elif click_parameter:
             # Determine if it's an argument or option
             if hasattr(click_parameter, "__name__") and "argument" in str(click_parameter):
@@ -572,6 +577,21 @@ def generate_click_parameters(
             final_options = options + config_and_env_options
             if config_and_env_options:
                 func._has_config_option = True  # type: ignore
+
+        # Inject argument descriptions into docstring BEFORE applying decorators
+        if argument_docs:
+            original_doc = func.__doc__ or ""
+            # Build argument documentation section
+            # Use \b to prevent Click from rewrapping, and format like Options section
+            arg_doc_lines = ["\n\n\b"]
+            arg_doc_lines.append("\n\b\bArguments:")
+            for arg_name, description in argument_docs:
+                # Match Click's Options formatting: 2 space indent, left-aligned
+                arg_doc_lines.append(f"\n\b\b  {arg_name.ljust(18)} {description}")
+            arg_doc_section = "".join(arg_doc_lines)
+
+            # Append to existing docstring
+            func.__doc__ = original_doc.rstrip() + arg_doc_section
 
         # Apply arguments first, then options (Click requirement)
         all_decorators = arguments + final_options

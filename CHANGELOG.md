@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2025-09-29
+
+### Added
+
+- **Automatic argument help injection into command docstrings**
+  - Click arguments (positional parameters) don't show help text by default
+  - `wry` now automatically injects argument descriptions from `Field(description=...)` into the command's docstring
+  - Arguments section is formatted to match Click's Options section for visual consistency
+  - Uses `\b` escape sequences to prevent rewrapping and align with Options
+  - Only injects descriptions for arguments that have them
+  - Preserves existing command docstrings
+  - Example: `arg: Annotated[str, AutoClickParameter.ARGUMENT] = Field(description="Help text")`
+
+- **New `AutoExclude` convenience alias**
+  - Added `AutoExclude` as a shorthand for `AutoClickParameter.EXCLUDE`
+  - Complements existing `AutoOption` and `AutoArgument` aliases
+  - Makes field exclusion more concise: `field: Annotated[str, AutoExclude]`
+
 ## [0.2.0] - 2025-09-29
 
 ### Added

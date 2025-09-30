@@ -89,6 +89,7 @@ from .multi_model import (  # noqa: E402
 # Convenience aliases
 AutoOption = AutoClickParameter.OPTION
 AutoArgument = AutoClickParameter.ARGUMENT
+AutoExclude = AutoClickParameter.EXCLUDE
 
 # Re-export all public APIs
 __all__ = [
