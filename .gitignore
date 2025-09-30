@@ -137,6 +137,3 @@ dmypy.json
 
 # macOS
 .DS_Store
-
-# Auto-generated version file
-wry/_version.py

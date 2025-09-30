@@ -11,7 +11,6 @@ class TestComprehensiveImports:
         """Test importing all wry modules."""
         modules = [
             "wry",
-            "wry._version",
             "wry.auto_model",
             "wry.click_integration",
             "wry.multi_model",
