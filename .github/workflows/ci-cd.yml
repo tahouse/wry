@@ -22,7 +22,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Need full history for setuptools-scm
+        fetch-depth: 0  # Need full history for poetry-dynamic-versioning
         # Don't fetch tags on main branch builds to avoid version conflicts
         fetch-tags: ${{ !startsWith(github.ref, 'refs/heads/main') }}
 
@@ -49,10 +49,6 @@ jobs:
       run: |
         poetry install --with dev
 
-    - name: Install pre-commit hooks
-      run: |
-        pre-commit install
-
     - name: Run pre-commit checks
       run: |
         poetry run pre-commit run --all-files --show-diff-on-failure
@@ -74,7 +70,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Need full history for setuptools-scm
+        fetch-depth: 0  # Need full history for poetry-dynamic-versioning
         # Don't fetch tags on main branch builds to avoid version conflicts
         fetch-tags: ${{ !startsWith(github.ref, 'refs/heads/main') }}
 
