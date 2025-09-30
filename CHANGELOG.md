@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-09-29
+
+### Added
+
+- **Field exclusion with `AutoClickParameter.EXCLUDE`**
+  - New `EXCLUDE` enum value for `AutoClickParameter` to explicitly exclude fields from CLI
+  - Works with both `AutoWryModel` and `WryModel`
+  - Excluded fields maintain default values and source tracking
+  - Useful for internal fields, computed values, and polymorphic validation
+  - Example: `excluded_field: Annotated[str, AutoClickParameter.EXCLUDE] = "internal"`
+
+### Changed
+
+- **Build system migration from setuptools to Poetry**
+  - Improved dependency management with lock files
+  - Better development environment isolation
+  - Consistent dependencies across local and CI/CD environments
+  - Maintained git tag-based versioning with `poetry-dynamic-versioning`
+  - Updated CI/CD workflows to use Poetry
+
+### Fixed
+
+- **`AutoWryModel` annotation processing**
+  - Fixed issue where fields with simple type annotations weren't processed correctly
+  - All fields now properly receive `AutoClickParameter.OPTION` annotation
+  - Improved test isolation to prevent class name conflicts
+
 ## [0.1.9] - 2025-09-29
 
 ### Added

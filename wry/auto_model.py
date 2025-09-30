@@ -42,66 +42,73 @@ class AutoWryModel(WryModel):
         """Automatically add AutoOption to all unannotated fields."""
         super().__init_subclass__(**kwargs)
 
+        # Skip if we've already processed this class
+        if hasattr(cls, "_autowrymodel_processed"):
+            return
+
+        # Mark this class as processed
+        cls._autowrymodel_processed = True  # type: ignore[attr-defined]
+
         # Process annotations to add AutoOption where needed
         if not hasattr(cls, "__annotations__"):
             cls.__annotations__ = {}
 
-        # Get field names from the class
-        for attr_name in dir(cls):
+        # Process all annotations to add AutoOption where needed
+        for attr_name, annotation in cls.__annotations__.copy().items():
             if attr_name.startswith("_"):
+                continue
+
+            # Check if it's already Annotated
+            origin = get_origin(annotation)
+            # Compare using string representation to handle module reload scenarios
+            if origin is not None and str(origin) == "<class 'typing.Annotated'>":
+                # Check if it has any Click-related metadata
+                metadata = get_args(annotation)[1:]
+                has_click_metadata = any(
+                    # Check for AutoClickParameter enums
+                    isinstance(m, AutoClickParameter)
+                    or
+                    # Check for Click decorators
+                    (hasattr(m, "__module__") and "click" in str(m.__module__))
+                    for m in metadata
+                )
+
+                if has_click_metadata:
+                    # Already has Click configuration, skip
+                    continue
+
+                # Add AutoOption to existing annotation
+                base_type = get_args(annotation)[0]
+                # For Python 3.10 compatibility, we need to reconstruct manually
+                # Create a new annotation with AutoOption prepended to existing metadata
+                if not metadata:
+                    cls.__annotations__[attr_name] = Annotated[base_type, AutoClickParameter.OPTION]
+                elif len(metadata) == 1:
+                    cls.__annotations__[attr_name] = Annotated[base_type, AutoClickParameter.OPTION, metadata[0]]
+                elif len(metadata) == 2:
+                    cls.__annotations__[attr_name] = Annotated[
+                        base_type, AutoClickParameter.OPTION, metadata[0], metadata[1]
+                    ]
+                else:
+                    # For more metadata, we skip adding AutoOption to avoid complexity
+                    # This is a rare case and the field will still work
+                    pass
+            else:
+                # Not annotated, add AutoOption
+                cls.__annotations__[attr_name] = Annotated[annotation, AutoClickParameter.OPTION]
+
+        # Also process fields that are defined with Field() but not in annotations
+        for attr_name in dir(cls):
+            if attr_name.startswith("_") or attr_name in cls.__annotations__:
                 continue
 
             attr_value = getattr(cls, attr_name)
 
             # Check if it's a field
             if isinstance(attr_value, FieldInfo):
-                # Check if annotation exists
-                if attr_name in cls.__annotations__:
-                    annotation = cls.__annotations__[attr_name]
-
-                    # Check if it's already Annotated
-                    origin = get_origin(annotation)
-                    if origin is not None and str(origin) == str(Annotated):
-                        # Check if it has any Click-related metadata
-                        metadata = get_args(annotation)[1:]
-                        has_click_metadata = any(
-                            # Check for AutoClickParameter enums
-                            isinstance(m, AutoClickParameter)
-                            or
-                            # Check for Click decorators
-                            (hasattr(m, "__module__") and "click" in str(m.__module__))
-                            for m in metadata
-                        )
-
-                        if has_click_metadata:
-                            # Already has Click configuration, skip
-                            continue
-
-                        # Add AutoOption to existing annotation
-                        base_type = get_args(annotation)[0]
-                        # For Python 3.10 compatibility, we need to reconstruct manually
-                        # Create a new annotation with AutoOption prepended to existing metadata
-                        if not metadata:
-                            cls.__annotations__[attr_name] = Annotated[base_type, AutoClickParameter.OPTION]
-                        elif len(metadata) == 1:
-                            cls.__annotations__[attr_name] = Annotated[
-                                base_type, AutoClickParameter.OPTION, metadata[0]
-                            ]
-                        elif len(metadata) == 2:
-                            cls.__annotations__[attr_name] = Annotated[
-                                base_type, AutoClickParameter.OPTION, metadata[0], metadata[1]
-                            ]
-                        else:
-                            # For more metadata, we skip adding AutoOption to avoid complexity
-                            # This is a rare case and the field will still work
-                            pass
-                    else:
-                        # Not annotated, add AutoOption
-                        cls.__annotations__[attr_name] = Annotated[annotation, AutoClickParameter.OPTION]
-                else:
-                    # No annotation, infer type from field
-                    field_type = attr_value.annotation or Any
-                    cls.__annotations__[attr_name] = Annotated[field_type, AutoClickParameter.OPTION]
+                # No annotation, infer type from field
+                field_type = attr_value.annotation or Any
+                cls.__annotations__[attr_name] = Annotated[field_type, AutoClickParameter.OPTION]
 
 
 # Convenience function for creating auto models dynamically

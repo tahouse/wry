@@ -13,7 +13,7 @@ import inspect
 import types
 from collections.abc import Callable, Mapping, Sequence
 from enum import Enum, auto
-from typing import Annotated, Any, TypeAlias, cast, get_args, get_origin, get_type_hints
+from typing import Any, TypeAlias, cast, get_args, get_origin, get_type_hints
 
 import click
 from annotated_types import (
@@ -43,6 +43,7 @@ class AutoClickParameter(Enum):
     OPTION = auto()
     REQUIRED_OPTION = auto()
     ARGUMENT = auto()
+    EXCLUDE = auto()
 
 
 ClickParameterDecorator: TypeAlias = Callable[[FC], FC]
@@ -341,7 +342,9 @@ def generate_click_parameters(
         annotation = type_hints.get(field_name)
 
         # Skip fields without annotations
-        if get_origin(annotation) is not Annotated:
+        origin = get_origin(annotation)
+        # Compare using string representation to handle module reload scenarios
+        if origin is None or str(origin) != "<class 'typing.Annotated'>":
             continue
 
         # Get metadata from annotation
@@ -357,6 +360,9 @@ def generate_click_parameters(
                 field_type = AutoClickParameter.REQUIRED_OPTION
             elif item == AutoClickParameter.ARGUMENT:
                 field_type = AutoClickParameter.ARGUMENT
+            elif item == AutoClickParameter.EXCLUDE:
+                field_type = AutoClickParameter.EXCLUDE
+                break  # Skip this field entirely
             elif (
                 hasattr(item, "__module__")
                 and "click" in str(item.__module__)
@@ -364,6 +370,10 @@ def generate_click_parameters(
             ):
                 click_parameter = item
                 break
+
+        # Skip excluded fields
+        if field_type == AutoClickParameter.EXCLUDE:
+            continue
 
         if field_type == AutoClickParameter.OPTION or field_type == AutoClickParameter.REQUIRED_OPTION:
             # Auto-generate Click option from Field info

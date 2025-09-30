@@ -23,14 +23,25 @@ class TestComprehensiveImports:
             "wry.core.sources",
         ]
 
+        # Save original modules
+        original_modules = {}
         for module_name in modules:
-            # Remove from cache to force reimport
             if module_name in sys.modules:
-                del sys.modules[module_name]
+                original_modules[module_name] = sys.modules[module_name]
 
-            # Import module
-            module = import_module(module_name)
-            assert module is not None
+        try:
+            for module_name in modules:
+                # Remove from cache to force reimport
+                if module_name in sys.modules:
+                    del sys.modules[module_name]
+
+                # Import module
+                module = import_module(module_name)
+                assert module is not None
+        finally:
+            # Restore original modules
+            for module_name, module in original_modules.items():
+                sys.modules[module_name] = module
 
     def test_all_public_exports_available(self):
         """Test that all public exports are available."""
