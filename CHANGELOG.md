@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2025-10-02
+
+### Fixed
+
+- CI/CD build configuration for setuptools-scm
+- Version generation now works correctly with git tags
+
 ## [0.3.0] - 2025-10-02
 
 ### Changed
