@@ -28,7 +28,7 @@ class TestVersionParsingEdgeCases:
             # Should fall back to default version
             assert hasattr(wry, "__version__")
             # With setuptools-scm, falls back to placeholder
-            assert wry.__version__ == "0.0.0"
+            assert wry.__version__ == "0.0.1-dev"
             assert hasattr(wry, "__commit_id__")
             assert wry.__commit_id__ is None
 
@@ -48,7 +48,7 @@ class TestVersionParsingEdgeCases:
             import wry
 
             # Should use fallback version
-            assert wry.__version__ == "0.0.0"
+            assert wry.__version__ == "0.0.1-dev"
             assert hasattr(wry, "__commit_id__")
             assert wry.__commit_id__ is None
 
