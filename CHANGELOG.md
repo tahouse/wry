@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-10-02
+
+### Changed
+
+- **Reverted from Poetry to setuptools-scm**
+  - Removed Poetry dependency and poetry.lock
+  - Back to standard pip/venv workflow: `pip install -e ".[dev]"`
+  - Simplified build system using setuptools-scm directly
+  - All dependencies still in pyproject.toml [project.dependencies]
+  - Development dependencies in [project.optional-dependencies]
+  - Easier for contributors (standard Python tooling)
+  - No lock file conflicts for library users
+  - Updated README with pip-based setup instructions
+
+### Added
+
+- **Comprehensive AI Knowledge Base (AI_KNOWLEDGE_BASE.md)**
+  - 2293-line comprehensive reference for AI assistants and LLMs
+  - Complete module reference with implementation details
+  - Detailed configuration flow diagrams
+  - Source tracking deep dive with algorithms
+  - Test coverage details (407 tests, 92% coverage)
+  - Common patterns, edge cases, and gotchas
+  - Quick start templates for all use cases
+  - Troubleshooting flowchart and debugging guide
+  - API reference with all classes, functions, and methods
+
+- **Integrated help system (wry.help_system)**
+  - Programmatic documentation access
+  - Multiple topics: readme, ai, sources, architecture, examples
+  - CLI usage: `python -m wry.help_system [topic]`
+  - Python API: `from wry import print_help; print_help('ai')`
+  - Auto-pager for long content
+  - Exported functions: `get_help_content()`, `print_help()`, `show_help_index()`
+
+- **Comprehensive source tracking example**
+  - `examples/source_tracking_comprehensive.py` demonstrates all 4 sources
+  - Color-coded output (GREEN=CLI, BLUE=JSON, YELLOW=ENV, DIM=DEFAULT)
+  - Interactive testing with sample commands
+  - Includes `examples/sample_config.json` for testing
+  - Shows source summary and precedence explanation
+
+### Changed
+
+- **Enhanced README source tracking section**
+  - Clearer explanation of all 4 sources (DEFAULT/ENV/JSON/CLI)
+  - Added comprehensive example reference
+  - Visual output examples showing precedence
+  - Better quick start for source tracking
+
 ## [0.2.3] - 2025-10-01
 
 ### Fixed
@@ -92,12 +142,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Build system migration from setuptools to Poetry**
+- **Build system migration from setuptools to Poetry** (Reverted in v0.2.4)
   - Improved dependency management with lock files
   - Better development environment isolation
   - Consistent dependencies across local and CI/CD environments
   - Maintained git tag-based versioning with `poetry-dynamic-versioning`
   - Updated CI/CD workflows to use Poetry
+  - **Note**: This was reverted back to setuptools-scm in a later release for simplicity
 
 ### Fixed
 

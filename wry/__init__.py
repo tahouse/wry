@@ -46,7 +46,7 @@ Example:
 Coming soon - this package is under active development.
 """
 
-# Version is managed by poetry-dynamic-versioning from git tags
+# Version is managed by setuptools-scm from git tags
 try:
     from ._version import __commit_id__, __version__
 
@@ -91,6 +91,9 @@ AutoOption = AutoClickParameter.OPTION
 AutoArgument = AutoClickParameter.ARGUMENT
 AutoExclude = AutoClickParameter.EXCLUDE
 
+# Help system
+from .help_system import get_help_content, print_help, show_help_index  # noqa: E402
+
 # Re-export all public APIs
 __all__ = [
     # Core functionality
@@ -115,6 +118,11 @@ __all__ = [
     # Convenience exports
     "AutoOption",
     "AutoArgument",
+    "AutoExclude",
+    # Help system
+    "get_help_content",
+    "print_help",
+    "show_help_index",
     # Version info
     "__version__",
     "__version_full__",

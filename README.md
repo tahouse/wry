@@ -73,9 +73,14 @@ Hello Bob, you are 35 years old!
 
 ## Value Source Tracking
 
-wry can track where each configuration value came from. You have two options:
+wry tracks where each configuration value came from, supporting all four sources:
 
-### Option 1: Direct Instantiation (No Source Tracking)
+- **DEFAULT**: Values from model field defaults
+- **ENV**: Values from environment variables
+- **JSON**: Values from configuration files (via `--config`)
+- **CLI**: Values from command-line arguments
+
+### Basic Usage (No Source Tracking)
 
 ```python
 @click.command()
@@ -83,10 +88,12 @@ wry can track where each configuration value came from. You have two options:
 def main(**kwargs):
     # Simple instantiation - no source tracking
     config = AppArgs(**kwargs)
-    # config.source.* will always show CLI regardless of actual source
+    # Works fine, but config.source.* will always show CLI
 ```
 
-### Option 2: With @click.pass_context (Full Source Tracking)
+### Full Source Tracking (Recommended)
+
+To enable accurate source tracking, use `@click.pass_context` and `from_click_context()`:
 
 ```python
 @click.command()
@@ -96,7 +103,7 @@ def main(ctx, **kwargs):
     # Full source tracking with context
     config = AppArgs.from_click_context(ctx, **kwargs)
 
-    # Now sources are accurate
+    # Check individual field sources
     print(config.source.name)     # ValueSource.CLI
     print(config.source.age)      # ValueSource.ENV
     print(config.source.verbose)  # ValueSource.DEFAULT
@@ -106,11 +113,37 @@ def main(ctx, **kwargs):
     # {
     #     ValueSource.CLI: ['name'],
     #     ValueSource.ENV: ['age'],
+    #     ValueSource.JSON: ['timeout'],
     #     ValueSource.DEFAULT: ['verbose']
     # }
 ```
 
-**Note**: `from_click_context()` requires a Click context. If you don't need source tracking, use direct instantiation.
+### Comprehensive Example
+
+See `examples/source_tracking_comprehensive.py` for a complete example showing all four sources working together. Run it with:
+
+```bash
+# With defaults only
+python examples/source_tracking_comprehensive.py
+
+# With environment variables
+export MYAPP_TIMEOUT=120
+export MYAPP_DEBUG=true
+python examples/source_tracking_comprehensive.py
+
+# Mix all sources (CLI > ENV > JSON > DEFAULT)
+export MYAPP_TIMEOUT=120
+python examples/source_tracking_comprehensive.py --config examples/sample_config.json --port 3000
+```
+
+**Output shows source for each field:**
+```
+host         = json-server.com      [from JSON]
+port         = 3000                 [from CLI]    ← CLI overrides JSON
+debug        = True                 [from ENV]
+timeout      = 120                  [from ENV]
+log_level    = DEBUG                [from JSON]
+```
 
 ## Configuration Precedence
 
@@ -332,14 +365,11 @@ cd wry
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install Poetry (if not already installed)
-pip install poetry
-
-# Install all dependencies in development mode
-poetry install
+# Install package in development mode with dev dependencies
+pip install -e ".[dev]"
 
 # Install pre-commit hooks
-poetry run pre-commit install
+pre-commit install
 ```
 
 ### Running Tests
@@ -400,8 +430,7 @@ To ensure consistent behavior between local development and CI:
 Install the exact versions used in CI:
 
 ```bash
-poetry update
-poetry install
+pip install -e ".[dev]" --upgrade
 ```
 
 ### Coverage Requirements
@@ -486,42 +515,43 @@ We welcome contributions! Please follow these guidelines to ensure a smooth proc
 
 ### Development Setup
 
-We use Poetry for dependency management to ensure consistent environments:
+We use standard Python virtual environments and pip for dependency management:
 
 ```bash
-# Install Poetry (if not already installed)
-curl -sSL https://install.python-poetry.org | python3 -
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# Install dependencies (including dev dependencies)
-poetry install
-
-# Activate the virtual environment
-poetry shell
+# Install package in development mode with all dependencies
+pip install -e ".[dev]"
 ```
 
-**Important**: Poetry automatically creates an isolated virtual environment and uses `poetry.lock` to ensure everyone has the exact same dependencies.
+**Note**: All dependencies are specified in `pyproject.toml`. The `[dev]` extra includes testing, linting, and development tools.
 
-### Common Poetry Commands
+### Common Development Commands
 
 ```bash
-# Install dependencies from lock file
-poetry install
+# Install package in editable mode
+pip install -e ".[dev]"
 
-# Update dependencies within version constraints
-poetry update
-
-# Add a new dependency
-poetry add package-name
-
-# Add a development dependency
-poetry add --group dev package-name
+# Update dependencies
+pip install -e ".[dev]" --upgrade
 
 # Show installed packages
-poetry show
+pip list
 
-# Run commands in the Poetry environment
-poetry run python script.py
-poetry run pytest
+# Run tests
+pytest
+
+# Run with coverage
+pytest --cov=wry
+
+# Run linting
+ruff check wry tests
+ruff format wry tests
+
+# Run type checking
+mypy wry
 ```
 
 ### Getting Started
@@ -551,9 +581,10 @@ poetry run pytest
 1. **Set up development environment**:
 
    ```bash
-   poetry install        # Creates venv and installs all dependencies
-   poetry shell          # Activate the virtual environment
-   poetry run pre-commit install  # Set up git hooks
+   python -m venv venv       # Create virtual environment
+   source venv/bin/activate  # Activate it
+   pip install -e ".[dev]"   # Install with dev dependencies
+   pre-commit install        # Set up git hooks
    ```
 
 2. **Make your changes**:
@@ -566,13 +597,16 @@ poetry run pytest
 
    ```bash
    # Run tests
-   poetry run pytest
+   pytest
 
-   # Check coverage (must be 100%)
-   poetry run pytest --cov=wry --cov-report=term-missing
+   # Check coverage (must be ≥90%)
+   pytest --cov=wry --cov-report=term-missing
 
    # Run linting
-   poetry run pre-commit run --all-files
+   pre-commit run --all-files
+   # Or run individual tools:
+   ruff check wry tests
+   mypy wry
    ```
 
 4. **Commit your changes**:

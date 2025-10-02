@@ -16,23 +16,21 @@ class TestVersionParsingEdgeCases:
         for mod in modules_to_remove:
             del sys.modules[mod]
 
-        with patch.dict(sys.modules):
-            # Make _version import fail
-            def raise_import_error(name, *args):
-                if name == "wry._version":
-                    raise ImportError("No module named wry._version")
-                return original_import(name, *args)
+        # Block the _version module from being importable
+        with patch.dict(sys.modules, {"wry._version": None}):
+            # Force reload to trigger the import error path
+            import importlib
 
-            original_import = __import__
-            with patch("builtins.__import__", side_effect=raise_import_error):
-                import wry
+            import wry
 
-                # Should fall back to default version
-                assert hasattr(wry, "__version__")
-                # With poetry-dynamic-versioning, falls back to placeholder
-                assert wry.__version__ == "0.0.0"
-                assert hasattr(wry, "__commit_id__")
-                assert wry.__commit_id__ is None
+            importlib.reload(wry)
+
+            # Should fall back to default version
+            assert hasattr(wry, "__version__")
+            # With setuptools-scm, falls back to placeholder
+            assert wry.__version__ == "0.0.0"
+            assert hasattr(wry, "__commit_id__")
+            assert wry.__commit_id__ is None
 
     def test_version_module_missing_version(self):
         """Test when _version module exists but has no __version__."""

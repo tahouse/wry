@@ -1,40 +1,40 @@
 #!/usr/bin/env bash
-# Update poetry.lock with latest compatible versions
-# This ensures all dependencies are up-to-date within version constraints
+# Update dependencies to latest compatible versions
+# Dependencies are specified in pyproject.toml [project.dependencies]
 
 set -euo pipefail
 
-echo "📦 Updating Poetry dependencies..."
+echo "📦 Updating dependencies..."
 echo ""
+
+# Ensure venv is activated
+if [ -z "${VIRTUAL_ENV:-}" ]; then
+    echo "⚠️  No virtual environment detected. Activate one first:"
+    echo "   python -m venv venv"
+    echo "   source venv/bin/activate"
+    exit 1
+fi
 
 # Show current outdated packages
 echo "Current outdated packages:"
-poetry show --outdated || echo "  (none found or poetry show --outdated not available)"
+pip list --outdated || echo "  (all up to date)"
 echo ""
 
 # Update all dependencies to latest compatible versions
-echo "Running poetry update..."
-poetry update
+echo "Upgrading all dependencies..."
+pip install -e ".[dev]" --upgrade
 
 echo ""
 echo "✅ Dependencies updated successfully!"
 echo ""
 
-# Show what changed
-if git diff --quiet poetry.lock; then
-    echo "ℹ️  No changes to dependencies."
-else
-    echo "📝 Summary of changes:"
-    echo ""
-    # Show a summary of what changed
-    git diff --stat poetry.lock
-    echo ""
-    echo "For detailed changes, run: git diff poetry.lock"
-fi
+# Show installed versions
+echo "📝 Currently installed versions:"
+pip list | grep -E "click|pydantic|pytest|ruff|mypy" || true
 
 echo ""
 echo "Next steps:"
-echo "  1. Review the changes: git diff poetry.lock"
-echo "  2. Test the changes: poetry run pytest"
-echo "  3. Commit if tests pass: git add poetry.lock && git commit -m 'chore: update dependencies'"
+echo "  1. Test the changes: pytest"
+echo "  2. Run checks: pre-commit run --all-files"
+echo "  3. Commit if tests pass"
 echo ""
