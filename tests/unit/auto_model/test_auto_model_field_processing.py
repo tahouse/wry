@@ -59,6 +59,6 @@ class TestAutoModelFieldProcessing:
         config = ModelWithMixedAttributes()
         assert config.name == "default"
         # ClassVar should not be a field
-        assert "CONSTANT" not in config.model_fields
+        assert "CONSTANT" not in ModelWithMixedAttributes.model_fields
         assert hasattr(config, "method")  # methods are accessible on instances
         assert callable(config.method)  # and remain callable

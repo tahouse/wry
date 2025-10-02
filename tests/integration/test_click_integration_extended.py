@@ -298,10 +298,13 @@ class TestEagerJsonConfig:
         eager_json_config(ctx, None, str(config_file))
 
         # Check that parameters were marked as not required
+        # Note: We do NOT modify param.default to preserve CLI override behavior
         for param in ctx.command.params:
             if param.name in ["required_arg", "optional"]:
                 assert not param.required
-                assert param.default in ["from-json", "also-json"]
+
+        # JSON data should be stored in context for later use
+        assert ctx.obj.get("json_data") == {"required_arg": "from-json", "optional": "also-json"}
 
 
 class TestExtractAndModifyArgument:

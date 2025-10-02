@@ -66,7 +66,7 @@ class WryModel(BaseModel):
         if "_value_sources" not in data:
             # Only initialize sources if not already provided
             self._value_sources = {}
-            for field_name in self.model_fields:
+            for field_name in self.__class__.model_fields:
                 # Mark non-default values as programmatic
                 if field_name in data:
                     self._value_sources[field_name] = ValueSource.CLI
@@ -526,6 +526,7 @@ class WryModel(BaseModel):
                         # Only override if it's actually from CLI
                         if "COMMANDLINE" in source_str:
                             config_data[field_name] = TrackedValue(value, ValueSource.CLI)
+                            continue
                         # Skip if it's DEFAULT or ENVIRONMENT - already handled above
                         continue
                 except (AttributeError, RuntimeError):

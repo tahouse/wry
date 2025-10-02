@@ -380,14 +380,22 @@ def generate_click_parameters(
             # Auto-generate Click option from Field info
             option_name = f"--{field_name.replace('_', '-')}"
 
+            # Check if field is required first (needed to decide on default handling)
+            is_required = field_info.is_required() or field_type == AutoClickParameter.REQUIRED_OPTION
+
             click_kwargs: dict[str, Any] = {
-                "default": (field_info.default if field_info.default is not PydanticUndefined else None),
                 "help": field_info.description or f"{field_name.replace('_', ' ').title()}",
                 "show_default": True,
             }
 
-            # Check if field is required
-            is_required = field_info.is_required() or field_type == AutoClickParameter.REQUIRED_OPTION
+            # Only set default if field has one, or if field is not required
+            # For required fields without a default, we must NOT set default=None
+            # or Click will think there IS a default and won't enforce the requirement
+            if field_info.default is not PydanticUndefined:
+                click_kwargs["default"] = field_info.default
+            elif not is_required:
+                # Optional field without explicit default gets None
+                click_kwargs["default"] = None
 
             # Determine Click type from annotation
             base_type = get_args(annotation)[0]
@@ -740,23 +748,15 @@ def eager_json_config(ctx: click.Context, param: click.Parameter, value: Any) ->
         with open(value) as f:
             json_data = json.load(f)
 
-        # Pre-fill missing required parameters from JSON
-        # This prevents Click from throwing MissingParameter errors
-        for json_key, json_value in json_data.items():
-            param_key = json_key.replace("-", "_")  # Handle kebab-case
-            if param_key not in ctx.params:
-                ctx.params[param_key] = json_value
-
-        # Store for later merging
+        # Store JSON data for later merging in from_click_context
         ctx.ensure_object(dict)["json_data"] = json_data
 
-        # Also modify Click argument requirements if they exist
-        # This allows JSON to satisfy required arguments
+        # Mark parameters from JSON as not required
+        # This allows JSON to satisfy required arguments without modifying defaults
         if hasattr(ctx, "command") and ctx.command:
             for p in ctx.command.params:
                 if (isinstance(p, click.Argument) or isinstance(p, click.Option)) and p.name in json_data:
                     p.required = False
-                    p.default = json_data[p.name]
 
         return value
 

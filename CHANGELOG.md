@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2025-10-01
+
+### Fixed
+
+- **Pydantic V2.11+ deprecation warning**
+  - Fixed deprecation warning: "Accessing the 'model_fields' attribute on the instance is deprecated"
+  - Changed all instance-level `model_fields` access to class-level access
+  - Updated `WryModel.__init__` to use `self.__class__.model_fields`
+  - Updated test files to use class-level access pattern
+  - Ensures compatibility with Pydantic V2.11 and future V3.0
+
+- **CLI argument precedence bug**
+  - Fixed critical bug where CLI arguments didn't override JSON config values
+  - Modified `eager_json_config` to not set `param.default`, preserving Click's ability to distinguish CLI-provided values
+  - CLI arguments now correctly take precedence over JSON/config file values
+  - Proper precedence order is now enforced: CLI > ENV > JSON > DEFAULT
+  - Source tracking accurately reflects where each value originated
+
+- **REQUIRED_OPTION not enforcing requirements**
+  - Fixed bug where fields marked with `AutoClickParameter.REQUIRED_OPTION` weren't being enforced as required
+  - Required fields without explicit defaults no longer receive `default=None` in Click kwargs
+  - Click now properly validates and reports missing required options
+
+### Changed
+
+- **Test suite improvements**
+  - Added 38 new tests covering edge cases and previously uncovered code paths
+  - Improved test coverage from 91% to 92%
+  - Total tests increased from 365 to 403
+  - All tests pass with Pydantic deprecation warnings treated as errors
+  - New test files:
+    - `tests/unit/model/test_extract_subset_edge_cases.py` - Extract subset edge cases
+    - `tests/unit/click/test_argument_types.py` - Click argument type handling
+    - `tests/unit/auto_model/test_auto_model_edge_cases.py` - AutoWryModel edge cases
+    - `tests/unit/click/test_format_constraint_text.py` - Constraint formatting
+    - `tests/unit/model/test_model_edge_cases.py` - WryModel edge cases
+
 ## [0.2.1] - 2025-09-29
 
 ### Added
