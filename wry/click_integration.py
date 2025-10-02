@@ -518,7 +518,16 @@ def generate_click_parameters(
         elif click_parameter:
             # Determine if it's an argument or option
             if hasattr(click_parameter, "__name__") and "argument" in str(click_parameter):
-                arguments.append(extract_and_modify_argument_decorator(click_parameter))
+                modified_arg, arg_info = extract_and_modify_argument_decorator(click_parameter)
+                arguments.append(modified_arg)
+
+                # Track argument description for docstring injection
+                # Try to get help from decorator first, then from Field description
+                help_text = arg_info.get("help") or field_info.description
+                if help_text:
+                    # Use the argument name from param_decls, uppercase it for display
+                    arg_name = arg_info.get("param_decls", [field_name])[0].upper()
+                    argument_docs.append((arg_name, help_text))
             else:
                 # Only append if it's actually a Click decorator, not an AutoClickParameter
                 if callable(click_parameter) and not isinstance(click_parameter, AutoClickParameter):
@@ -613,8 +622,15 @@ def generate_click_parameters(
 
 def extract_and_modify_argument_decorator(
     click_decorator: ClickParameterDecorator[Any],
-) -> ClickParameterDecorator[Any]:
-    """Extract and modify a click.argument decorator to set required=False."""
+) -> tuple[ClickParameterDecorator[Any], dict[str, Any]]:
+    """Extract and modify a click.argument decorator to set required=False.
+
+    Returns:
+        Tuple of (modified_decorator, info_dict) where info_dict contains:
+            - param_decls: list of parameter declaration strings
+            - help: help text if available
+            - other attributes from the original decorator
+    """
     # Default values - use a safe fallback
     param_decls: list[str] = ["argument"]
     attrs: dict[str, Any] = {"required": False}
@@ -655,8 +671,15 @@ def extract_and_modify_argument_decorator(
         # If closure inspection fails, just use defaults
         pass
 
+    # Create info dict with extracted information (including help if present)
+    info = {"param_decls": param_decls, **attrs}
+
+    # Remove 'help' from attrs before creating Click argument
+    # (click.Argument doesn't accept 'help' parameter)
+    argument_attrs = {k: v for k, v in attrs.items() if k != "help"}
+
     # Create new argument with modified attrs
-    return click.argument(*param_decls, **attrs)
+    return click.argument(*param_decls, **argument_attrs), info
 
 
 def build_config_with_sources(

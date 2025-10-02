@@ -315,8 +315,8 @@ class TestExtractAndModifyArgument:
         # Create a real click.argument decorator
         original = click.argument("filename", type=click.Path(), required=True)
 
-        # Extract and modify
-        modified = extract_and_modify_argument_decorator(original)
+        # Extract and modify (now returns tuple)
+        modified, info = extract_and_modify_argument_decorator(original)
 
         # Apply to a dummy function
         @modified
@@ -325,6 +325,9 @@ class TestExtractAndModifyArgument:
 
         # The modified decorator should create an argument with required=False
         # We can't easily verify this without inspecting Click internals
+        # But we can check the info dict
+        assert "param_decls" in info
+        assert info["required"] is False
 
     def test_extract_without_closure(self):
         """Test extracting from a decorator without proper closure."""
@@ -333,10 +336,13 @@ class TestExtractAndModifyArgument:
         def mock_decorator(func):
             return func
 
-        modified = extract_and_modify_argument_decorator(mock_decorator)
+        modified, info = extract_and_modify_argument_decorator(mock_decorator)
 
         # Should return a decorator that creates an argument
         assert callable(modified)
+        # Should have default info
+        assert "param_decls" in info
+        assert info["required"] is False
 
     def test_extract_with_exception(self):
         """Test that extraction handles exceptions gracefully."""
@@ -348,10 +354,13 @@ class TestExtractAndModifyArgument:
             def __call__(self, func):
                 return func
 
-        modified = extract_and_modify_argument_decorator(BadDecorator())
+        modified, info = extract_and_modify_argument_decorator(BadDecorator())
 
         # Should still return a valid decorator
         assert callable(modified)
+        # Should have safe defaults
+        assert "param_decls" in info
+        assert info["required"] is False
 
 
 class TestBuildConfigWithSources:

@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2025-10-01
+
+### Fixed
+
+- **Explicit `click.argument` decorators not getting help text in docstring**
+  - Fixed issue where explicit `click.argument` decorators weren't using `Field(description=...)` for help text injection into command docstrings
+  - `extract_and_modify_argument_decorator` now returns tuple of (decorator, info_dict) containing extracted attributes
+  - Help text extraction now falls back to `field_info.description` when decorator doesn't have explicit `help` parameter
+  - Help text is properly filtered out before passing to Click (since `click.Argument` doesn't accept `help` parameter)
+  - Arguments defined with both `AutoArgument` and explicit `click.argument()` now display their help text in the Arguments section of `--help` output
+
+### Added
+
+- **Example for explicit argument help injection**
+  - Added `examples/explicit_argument_help.py` demonstrating both `AutoArgument` and explicit `click.argument()` with `Field(description=...)`
+  - Shows how help text is automatically injected into the command's Arguments section
+
 ## [0.2.2] - 2025-10-01
 
 ### Fixed
