@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Example demonstrating field exclusion with AutoClickParameter.EXCLUDE."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import Field, field_validator
@@ -53,7 +53,7 @@ class AppConfig(AutoWryModel):
 @click.command()
 @AppConfig.generate_click_parameters()
 @click.pass_context
-def main(ctx, **kwargs):
+def main(ctx: click.Context, **kwargs: Any):
     """Example application with field exclusion."""
     # Create config with source tracking
     config = AppConfig.from_click_context(ctx, **kwargs)

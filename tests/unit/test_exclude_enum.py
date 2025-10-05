@@ -1,6 +1,6 @@
 """Test AutoClickParameter.EXCLUDE functionality."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from click.testing import CliRunner
@@ -30,7 +30,7 @@ class TestExcludeEnum:
 
         @click.command()
         @ConfigExcludeAuto.generate_click_parameters()
-        def cli(**kwargs):
+        def cli(**kwargs: Any):
             config = ConfigExcludeAuto(**kwargs)
             # Echo string representation for testing
             click.echo(f"name={config.name},count={config.count},polymorphic={config.polymorphic_input}")
@@ -72,7 +72,7 @@ class TestExcludeEnum:
 
         @click.command()
         @generate_click_parameters(ConfigExcludeWry)
-        def cli(**kwargs):
+        def cli(**kwargs: Any):
             config = ConfigExcludeWry(**kwargs)
             click.echo(f"name={config.name},excluded={config.excluded_field}")
 
@@ -98,7 +98,7 @@ class TestExcludeEnum:
 
         @click.command()
         @ConfigExcludePrecedence.generate_click_parameters()
-        def cli(**kwargs):
+        def cli(**kwargs: Any):
             config = ConfigExcludePrecedence(**kwargs)
             click.echo(f"conflicted={config.conflicted},normal={config.normal}")
 
@@ -124,7 +124,7 @@ class TestExcludeEnum:
         @click.command()
         @ConfigExcludeTracking.generate_click_parameters()
         @click.pass_context
-        def cli(ctx, **kwargs):
+        def cli(ctx: click.Context, **kwargs: Any):
             config = ConfigExcludeTracking.from_click_context(ctx, **kwargs)
             # Excluded fields should have DEFAULT source since they can't come from CLI
             click.echo(f"name_source={config.source.name},excluded_source={config.source.excluded}")

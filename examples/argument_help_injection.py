@@ -6,7 +6,7 @@ wry automatically injects argument descriptions from your Pydantic model
 into the command's docstring.
 """
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import Field
@@ -33,7 +33,7 @@ class DeployConfig(AutoWryModel):
 
 @click.command()
 @DeployConfig.generate_click_parameters()
-def deploy(**kwargs):
+def deploy(**kwargs: Any):
     """Deploy the application to a specific environment.
 
     This command handles deployment with proper validation and safety checks.

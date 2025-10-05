@@ -1,6 +1,6 @@
 """Test AutoWryModel edge cases for improved coverage."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from click.testing import CliRunner
@@ -43,7 +43,7 @@ class TestAutoModelEdgeCases:
 
         @click.command()
         @ModelWithEmptyMetadata.generate_click_parameters()
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             config = ModelWithEmptyMetadata(**kwargs)
             click.echo(f"value={config.value}")
 
@@ -61,7 +61,7 @@ class TestAutoModelEdgeCases:
 
         @click.command()
         @ModelWithOneMetadata.generate_click_parameters()
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             config = ModelWithOneMetadata(**kwargs)
             click.echo(f"value={config.value}")
 
@@ -128,7 +128,7 @@ class TestAutoModelEdgeCases:
 
         @click.command()
         @ModelWithClickMetadata.generate_click_parameters()
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             config = ModelWithClickMetadata(**kwargs)
             click.echo(f"value={config.value}")
 

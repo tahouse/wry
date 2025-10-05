@@ -39,7 +39,7 @@ def split_kwargs_by_model(
         @click.command()
         @generate_click_parameters(ServerConfig)
         @generate_click_parameters(DatabaseConfig)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             configs = split_kwargs_by_model(kwargs, ServerConfig, DatabaseConfig)
             server_config = ServerConfig(**configs[ServerConfig])
             db_config = DatabaseConfig(**configs[DatabaseConfig])
@@ -89,7 +89,7 @@ def create_models(
         @generate_click_parameters(ServerModel)
         @generate_click_parameters(DatabaseModel)
         @click.pass_context
-        def cmd(ctx, **kwargs):
+        def cmd(ctx: click.Context, **kwargs: Any):
             models = create_models(ctx, kwargs, ServerModel, DatabaseModel)
             server = models[ServerModel]
             db = models[DatabaseModel]
@@ -127,7 +127,7 @@ def multi_model(*model_classes: type[BaseModel], strict: bool = False) -> Any:
         @click.command()
         @multi_model(ServerModel, DatabaseModel)
         @click.pass_context  # Add this for source tracking
-        def my_command(ctx, **kwargs):
+        def my_command(ctx: click.Context, **kwargs: Any):
             models = create_models(ctx, kwargs, ServerModel, DatabaseModel)
             server = models[ServerModel]
             database = models[DatabaseModel]

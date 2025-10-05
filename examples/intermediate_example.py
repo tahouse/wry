@@ -8,7 +8,7 @@ This example demonstrates:
 - Type validation with Pydantic
 """
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import Field
@@ -40,7 +40,7 @@ class AppConfig(WryModel):
 @click.command()
 @generate_click_parameters(AppConfig)
 @click.pass_context
-def main(ctx: click.Context, **kwargs) -> None:
+def main(ctx: click.Context, **kwargs: Any) -> None:
     """Example CLI showing intermediate wry features."""
     # Create config from Click context with FULL source tracking
     # Note: @click.pass_context decorator is required for accurate source information

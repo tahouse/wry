@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Example showing AutoWryModel - automatic Click option generation."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import Field
@@ -73,7 +73,7 @@ def cli():
 @cli.command("traditional")
 @TraditionalConfig.generate_click_parameters()
 @click.pass_context
-def traditional_cmd(ctx, **kwargs):
+def traditional_cmd(ctx: click.Context, **kwargs: Any):
     """Traditional approach with explicit annotations."""
     config = TraditionalConfig.from_click_context(ctx, **kwargs)
     click.echo("Traditional Config:")
@@ -85,7 +85,7 @@ def traditional_cmd(ctx, **kwargs):
 @cli.command("auto")
 @AutoConfig.generate_click_parameters()
 @click.pass_context
-def auto_cmd(ctx, **kwargs):
+def auto_cmd(ctx: click.Context, **kwargs: Any):
     """Auto approach - much cleaner!"""
     config = AutoConfig.from_click_context(ctx, **kwargs)
     click.echo("Auto Config (same result, less code!):")
@@ -100,7 +100,7 @@ def auto_cmd(ctx, **kwargs):
 @cli.command("mixed")
 @MixedConfig.generate_click_parameters()
 @click.pass_context
-def mixed_cmd(ctx, **kwargs):
+def mixed_cmd(ctx: click.Context, **kwargs: Any):
     """Mixed approach with overrides."""
     config = MixedConfig.from_click_context(ctx, **kwargs)
     click.echo("Mixed Config:")
@@ -113,7 +113,7 @@ def mixed_cmd(ctx, **kwargs):
 @cli.command("dynamic")
 @DynamicConfig.generate_click_parameters()
 @click.pass_context
-def dynamic_cmd(ctx, **kwargs):
+def dynamic_cmd(ctx: click.Context, **kwargs: Any):
     """Dynamic model creation."""
     config = DynamicConfig.from_click_context(ctx, **kwargs)
     click.echo("Dynamic Config:")

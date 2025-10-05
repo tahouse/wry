@@ -1,6 +1,6 @@
 """Test Click argument type handling for improved coverage."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from click.testing import CliRunner
@@ -20,7 +20,7 @@ class TestArgumentTypes:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             config = Config(**kwargs)
             click.echo(f"count={config.count}")
 
@@ -37,7 +37,7 @@ class TestArgumentTypes:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             config = Config(**kwargs)
             click.echo(f"ratio={config.ratio}")
 
@@ -54,7 +54,7 @@ class TestArgumentTypes:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             config = Config(**kwargs)
             click.echo(f"enabled={config.enabled}")
 
@@ -78,7 +78,7 @@ class TestArgumentTypes:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             # The value will be passed as string from Click
             # We'll convert it in the command
             if isinstance(kwargs.get("custom"), str):
@@ -99,7 +99,7 @@ class TestArgumentTypes:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             config = Config(**kwargs)
             click.echo(f"value={config.value}")
 

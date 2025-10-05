@@ -1,6 +1,6 @@
 """Test constraint text formatting for improved coverage."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from annotated_types import Ge, Gt, Interval, Le, Len, Lt, MaxLen, MinLen, MultipleOf, Predicate, Timezone
@@ -21,7 +21,7 @@ class TestFormatConstraintText:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # The constraint should be in the help text
@@ -37,7 +37,7 @@ class TestFormatConstraintText:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         runner = CliRunner()
@@ -52,7 +52,7 @@ class TestFormatConstraintText:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         runner = CliRunner()
@@ -67,7 +67,7 @@ class TestFormatConstraintText:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         runner = CliRunner()
@@ -82,7 +82,7 @@ class TestFormatConstraintText:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         runner = CliRunner()
@@ -97,7 +97,7 @@ class TestFormatConstraintText:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         runner = CliRunner()
@@ -112,7 +112,7 @@ class TestFormatConstraintText:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         runner = CliRunner()
@@ -127,7 +127,7 @@ class TestFormatConstraintText:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         runner = CliRunner()
@@ -142,7 +142,7 @@ class TestFormatConstraintText:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         runner = CliRunner()
@@ -160,7 +160,7 @@ class TestFormatConstraintText:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         runner = CliRunner()
@@ -175,7 +175,7 @@ class TestFormatConstraintText:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         runner = CliRunner()

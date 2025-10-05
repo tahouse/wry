@@ -26,7 +26,7 @@ Run examples:
     python source_tracking_comprehensive.py --config examples/config.json --port 3000
 """
 
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import click
 from pydantic import Field
@@ -59,7 +59,7 @@ class AppConfig(AutoWryModel):
 @click.command()
 @AppConfig.generate_click_parameters()
 @click.pass_context
-def main(ctx, **kwargs):
+def main(ctx: click.Context, **kwargs: Any):
     """Application with comprehensive source tracking demonstration.
 
     This example shows how wry tracks where each configuration value comes from.

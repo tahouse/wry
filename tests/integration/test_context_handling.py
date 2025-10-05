@@ -1,6 +1,6 @@
 """Tests for Click context handling in wry."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from click.testing import CliRunner
@@ -25,7 +25,7 @@ class TestContextHandling:
         @click.command()
         @generate_click_parameters(ExampleConfig)
         @click.pass_context
-        def cmd(ctx, **kwargs):
+        def cmd(ctx: click.Context, **kwargs: Any):
             # Context is available because we used @click.pass_context
             assert isinstance(ctx, click.Context)
             config = ExampleConfig.from_click_context(ctx, **kwargs)
@@ -43,7 +43,7 @@ class TestContextHandling:
 
         @click.command()
         @generate_click_parameters(ExampleConfig)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             # When called through Click, context is available via get_current_context()
             # So this works even without @click.pass_context decorator
             config = ExampleConfig.from_click_context(**kwargs)
@@ -63,7 +63,7 @@ class TestContextHandling:
 
         @click.command()
         @generate_click_parameters(ExampleConfig)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             # Direct instantiation - simple but no source tracking
             config = ExampleConfig(**kwargs)
             click.echo(f"Name: {config.name}")
@@ -85,7 +85,7 @@ class TestContextHandling:
         @generate_click_parameters(ExampleConfig, strict=False)
         @generate_click_parameters(ExampleConfig, strict=False)  # Don't do this in real code!
         @click.pass_context  # Must be applied only once, after all decorators
-        def cmd(ctx, **kwargs):
+        def cmd(ctx: click.Context, **kwargs: Any):
             config = ExampleConfig.from_click_context(ctx, **kwargs)
             click.echo(f"Config: {config.name}")
             return config
@@ -102,7 +102,7 @@ class TestContextHandling:
 
         @click.command()
         @generate_click_parameters(ExampleConfig)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             # Direct instantiation - env vars still work but no source tracking
             config = ExampleConfig(**kwargs)
             click.echo(f"Name: {config.name}, Source: {config.source.name}")

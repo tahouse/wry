@@ -1,6 +1,6 @@
 """Test edge cases for Click integration that aren't covered in main tests."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from click.testing import CliRunner
@@ -79,7 +79,7 @@ class TestGenerateClickParametersEdgeCases:
 
         @click.command()
         @generate_click_parameters(PlainModel)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             click.echo(str(kwargs))
 
         # Should work but add no parameters
@@ -102,7 +102,7 @@ class TestGenerateClickParametersEdgeCases:
             @click.command()
             @generate_click_parameters(Config, strict=False)
             @generate_click_parameters(Config, strict=False)
-            def cmd(**kwargs):
+            def cmd(**kwargs: Any):
                 pass
 
             # Should have warned
@@ -117,7 +117,7 @@ class TestGenerateClickParametersEdgeCases:
 
         # This is technically valid - decorators stack
         @generate_click_parameters(Config)
-        def not_a_command(**kwargs):
+        def not_a_command(**kwargs: Any):
             return kwargs
 
         # Function should be callable
@@ -133,7 +133,7 @@ class TestGenerateClickParametersEdgeCases:
         @click.command()
         @click.option("--existing", default="test")
         @generate_click_parameters(Config)
-        def cmd(existing, **kwargs):
+        def cmd(existing: Any, **kwargs: Any):
             config = Config(**kwargs)
             click.echo(f"{existing} {config.extra}")
 
@@ -153,7 +153,7 @@ class TestGenerateClickParametersEdgeCases:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             # kwargs will have class_ and for_
             click.echo(f"class_={kwargs.get('class_')}, for_={kwargs.get('for_')}")
 

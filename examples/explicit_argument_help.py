@@ -1,6 +1,6 @@
 """Example demonstrating explicit click.argument with help text injection."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import ConfigDict, Field
@@ -30,7 +30,7 @@ class FileProcessorArgs(AutoWryModel):
 
 @click.command()
 @FileProcessorArgs.generate_click_parameters()
-def process(**kwargs):
+def process(**kwargs: Any):
     """Process input file and save results.
 
     This command demonstrates argument help text injection.

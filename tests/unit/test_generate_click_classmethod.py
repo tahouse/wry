@@ -1,5 +1,7 @@
 """Test generate_click_parameters as a classmethod."""
 
+from typing import Any
+
 import click
 from pydantic import Field
 
@@ -38,7 +40,7 @@ class TestGenerateClickClassmethod:
         # The important thing is that the classmethod works
         @click.command()
         @classmethod_decorator
-        def dummy(**kwargs):
+        def dummy(**kwargs: Any):
             pass
 
         # Should have config and show_env_vars options added

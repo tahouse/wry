@@ -1,6 +1,6 @@
 """Test that explicit click.argument decorators get help text injected into docstring."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from click.testing import CliRunner
@@ -21,7 +21,7 @@ class TestExplicitArgumentHelpInjection:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             """Process the input file."""
             pass
 
@@ -40,7 +40,7 @@ class TestExplicitArgumentHelpInjection:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             """Process the input file."""
             pass
 
@@ -63,7 +63,7 @@ class TestExplicitArgumentHelpInjection:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             """Copy files."""
             pass
 
@@ -83,7 +83,7 @@ class TestExplicitArgumentHelpInjection:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             """Process files."""
             pass
 

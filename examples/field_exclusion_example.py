@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Example showing different ways to exclude fields from Click parameter generation."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import Field
@@ -37,7 +37,7 @@ class ConfigWithExclusions(AutoWryModel):
 @click.command()
 @ConfigWithExclusions.generate_click_parameters()
 @click.pass_context
-def main(ctx, **kwargs):
+def main(ctx: click.Context, **kwargs: Any):
     """Example CLI with field exclusions."""
     config = ConfigWithExclusions.from_click_context(ctx, **kwargs)
 

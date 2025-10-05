@@ -2,7 +2,7 @@
 """Example demonstrating the different approaches to source tracking in wry."""
 
 import os
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import Field
@@ -29,7 +29,7 @@ def cli():
 
 @cli.command()
 @generate_click_parameters(Args)
-def without_context(**kwargs):
+def without_context(**kwargs: Any):
     """Command WITHOUT @click.pass_context - no source tracking."""
     click.echo("=== WITHOUT @click.pass_context ===\n")
 
@@ -51,7 +51,7 @@ def without_context(**kwargs):
 @cli.command()
 @generate_click_parameters(Args)
 @click.pass_context
-def with_context(ctx, **kwargs):
+def with_context(ctx: click.Context, **kwargs: Any):
     """Command WITH @click.pass_context - full source tracking."""
     click.echo("=== WITH @click.pass_context ===\n")
 

@@ -46,7 +46,7 @@ class AppArgs(AutoWryModel):
 
 @click.command()
 @AppArgs.generate_click_parameters()
-def main(**kwargs):
+def main(**kwargs: Any):
     """My simple CLI application."""
     # Create the model instance from kwargs
     config = AppArgs(**kwargs)
@@ -85,7 +85,7 @@ wry tracks where each configuration value came from, supporting all four sources
 ```python
 @click.command()
 @AppArgs.generate_click_parameters()
-def main(**kwargs):
+def main(**kwargs: Any):
     # Simple instantiation - no source tracking
     config = AppArgs(**kwargs)
     # Works fine, but config.source.* will always show CLI
@@ -99,7 +99,7 @@ To enable accurate source tracking, use `@click.pass_context` and `from_click_co
 @click.command()
 @AppArgs.generate_click_parameters()
 @click.pass_context
-def main(ctx, **kwargs):
+def main(ctx: click.Context, **kwargs: Any):
     # Full source tracking with context
     config = AppArgs.from_click_context(ctx, **kwargs)
 
@@ -137,7 +137,8 @@ python examples/source_tracking_comprehensive.py --config examples/sample_config
 ```
 
 **Output shows source for each field:**
-```
+
+```text
 host         = json-server.com      [from JSON]
 port         = 3000                 [from CLI]    ← CLI overrides JSON
 debug        = True                 [from ENV]
@@ -213,7 +214,7 @@ class DatabaseArgs(WryModel):
 @click.command()
 @multi_model(ServerConfig, DatabaseConfig)
 @click.pass_context
-def serve(ctx, **kwargs):
+def serve(ctx: click.Context, **kwargs: Any):
     # Create model instances
     configs = create_models(ctx, kwargs, ServerConfig, DatabaseConfig)
     server = configs[ServerConfig]
@@ -286,7 +287,7 @@ class AppArgs(WryModel):
 @click.command()
 @multi_model(DatabaseConfig, AppArgs)
 @click.pass_context
-def main(ctx, **kwargs):
+def main(ctx: click.Context, **kwargs: Any):
     # Automatically splits kwargs between models
     configs = create_models(ctx, kwargs, DatabaseConfig, AppArgs)
 
@@ -305,7 +306,7 @@ By default, `generate_click_parameters` runs in strict mode to prevent common mi
 @click.command()
 @Config.generate_click_parameters()  # strict=True by default
 @Config.generate_click_parameters()  # ERROR: Duplicate decorator detected!
-def main(**kwargs):
+def main(**kwargs: Any):
     pass
 ```
 

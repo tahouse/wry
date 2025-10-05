@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """The simplest wry example - automatic CLI from a Pydantic model."""
 
+from typing import Any
+
 import click
 from pydantic import Field
 
@@ -19,7 +21,7 @@ class AppConfig(AutoWryModel):
 # Current syntax - you need to handle kwargs yourself
 @click.command()
 @AppConfig.generate_click_parameters()
-def main(**kwargs):
+def main(**kwargs: Any):
     """A simple greeting application."""
     # Direct instantiation - simple but no accurate source tracking
     config = AppConfig(**kwargs)
@@ -34,7 +36,7 @@ def main(**kwargs):
         click.echo("    @click.command()")
         click.echo("    @AppConfig.generate_click_parameters()")
         click.echo("    @click.pass_context")
-        click.echo("    def main(ctx, **kwargs):")
+        click.echo("    def main(ctx: click.Context, **kwargs: Any):")
         click.echo("        config = AppConfig.from_click_context(ctx, **kwargs)")
 
 

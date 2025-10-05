@@ -1,6 +1,6 @@
 """Test closure extraction error handling."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import BaseModel
@@ -32,7 +32,7 @@ class TestClosureExtractionErrors:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Should still create the command
@@ -60,7 +60,7 @@ class TestClosureExtractionErrors:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Should handle the error gracefully
@@ -87,7 +87,7 @@ class TestClosureExtractionErrors:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Should still work

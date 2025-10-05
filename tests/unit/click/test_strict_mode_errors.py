@@ -1,7 +1,7 @@
 """Test strict mode error handling in generate_click_parameters."""
 
 import warnings
-from typing import Annotated
+from typing import Annotated, Any
 
 import pytest
 from pydantic import BaseModel
@@ -22,7 +22,7 @@ class TestStrictModeErrors:
             value: Annotated[int, AutoOption] = 0
 
         # Create a function and apply first decorator
-        def base_func(**kwargs):
+        def base_func(**kwargs: Any):
             pass
 
         # Apply first decorator - this should work
@@ -47,7 +47,7 @@ class TestStrictModeErrors:
         class Config2(BaseModel):
             value: Annotated[int, AutoOption] = 0
 
-        def base_func(**kwargs):
+        def base_func(**kwargs: Any):
             pass
 
         # Apply first decorator
@@ -67,7 +67,7 @@ class TestStrictModeErrors:
         class Config(BaseModel):
             field: Annotated[str, AutoOption] = "value"
 
-        def my_special_function(**kwargs):
+        def my_special_function(**kwargs: Any):
             pass
 
         # Apply first decorator

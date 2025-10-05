@@ -2,7 +2,7 @@
 
 import json
 import os
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from click.testing import CliRunner
@@ -35,7 +35,7 @@ class TestSourcePrecedence:
         @click.command()
         @generate_click_parameters(Config)
         @click.pass_context
-        def test_command(ctx: click.Context, **kwargs):
+        def test_command(ctx: click.Context, **kwargs: Any):
             config = Config.from_click_context(ctx, **kwargs)
 
             # Print values
@@ -155,7 +155,7 @@ class TestSourcePrecedence:
         @click.command()
         @generate_click_parameters(Config)
         @click.pass_context
-        def test_command(ctx: click.Context, **kwargs):
+        def test_command(ctx: click.Context, **kwargs: Any):
             config = Config.from_click_context(ctx, **kwargs)
             for field in ["field1", "field2", "field3", "field4"]:
                 value = getattr(config, field)
@@ -207,7 +207,7 @@ class TestSourcePrecedence:
         @click.command()
         @generate_click_parameters(Config)
         @click.pass_context
-        def test_command(ctx: click.Context, **kwargs):
+        def test_command(ctx: click.Context, **kwargs: Any):
             config = Config.from_click_context(ctx, **kwargs)
             click.echo(f"count={config.count} (type={type(config.count).__name__})")
             click.echo(f"ratio={config.ratio} (type={type(config.ratio).__name__})")
@@ -255,7 +255,7 @@ class TestSourcePrecedence:
         @click.command()
         @generate_click_parameters(Config)
         @click.pass_context
-        def test_command(ctx: click.Context, **kwargs):
+        def test_command(ctx: click.Context, **kwargs: Any):
             config = Config.from_click_context(ctx, **kwargs)
             click.echo(f"value={config.required_field}")
             click.echo(f"source={config.source.required_field.value}")

@@ -1,6 +1,6 @@
 """Test Click integration functionality."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from click.testing import CliRunner
@@ -28,7 +28,7 @@ class TestClickIntegration:
         @click.command()
         @generate_click_parameters(TestConfig)
         @click.pass_context
-        def test_command(ctx: click.Context, **kwargs):
+        def test_command(ctx: click.Context, **kwargs: Any):
             config = TestConfig.from_click_context(ctx, **kwargs)
             click.echo(f"name={config.name}")
             click.echo(f"count={config.count}")
@@ -65,7 +65,7 @@ class TestClickIntegration:
         @click.command()
         @generate_click_parameters(TestConfig)
         @click.pass_context
-        def test_command(ctx: click.Context, **kwargs):
+        def test_command(ctx: click.Context, **kwargs: Any):
             config = TestConfig.from_click_context(ctx, **kwargs)
             click.echo(f"filename={config.filename}")
             if config.optional_arg:
@@ -88,7 +88,7 @@ class TestClickIntegration:
         @click.command()
         @generate_click_parameters(TestConfig)
         @click.pass_context
-        def test_command(ctx: click.Context, **kwargs):
+        def test_command(ctx: click.Context, **kwargs: Any):
             config = TestConfig.from_click_context(ctx, **kwargs)
             click.echo(f"name={config.name}")
             click.echo(f"value={config.value}")
@@ -130,7 +130,7 @@ class TestClickIntegration:
         @click.command()
         @generate_click_parameters(TestConfig)
         @click.pass_context
-        def test_command(ctx: click.Context, **kwargs):
+        def test_command(ctx: click.Context, **kwargs: Any):
             config = TestConfig.from_click_context(ctx, **kwargs)
             click.echo(f"api_key={config.api_key}")
             click.echo(f"timeout={config.timeout}")
@@ -181,7 +181,7 @@ class TestClickIntegration:
 
         @click.command()
         @generate_click_parameters(TestConfig)
-        def test_command(**kwargs):
+        def test_command(**kwargs: Any):
             pass
 
         runner = CliRunner()
@@ -204,7 +204,7 @@ class TestClickIntegration:
 
         @click.command()
         @generate_click_parameters(TestConfig)
-        def test_command(**kwargs):
+        def test_command(**kwargs: Any):
             pass
 
         runner = CliRunner()

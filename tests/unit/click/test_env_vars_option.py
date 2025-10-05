@@ -1,6 +1,6 @@
 """Test Click environment variables option functionality."""
 
-from typing import Annotated, ClassVar
+from typing import Annotated, Any, ClassVar
 
 import click
 from click.testing import CliRunner
@@ -22,7 +22,7 @@ class TestEnvVarsOption:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             return kwargs
 
         # Check that show-env-vars option exists
@@ -41,7 +41,7 @@ class TestEnvVarsOption:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             # Should not reach here when --show-env-vars is used
             return "command executed"
 
@@ -62,7 +62,7 @@ class TestEnvVarsOption:
 
         @click.command()
         @generate_click_parameters(SimpleModel)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             return kwargs
 
         # Should still add the option but handle gracefully

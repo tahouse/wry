@@ -1,6 +1,6 @@
 """Test Click decorator edge cases."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import BaseModel
@@ -20,7 +20,7 @@ class TestDecoratorEdgeCases:
 
         @click.command()
         @generate_click_parameters(SimpleModel)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Should still work but not add any parameters
@@ -41,7 +41,7 @@ class TestDecoratorEdgeCases:
 
         @click.command()
         @generate_click_parameters(ProblematicModel)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Should process what it can
@@ -54,7 +54,7 @@ class TestDecoratorEdgeCases:
 
         @click.command()
         @generate_click_parameters(BaseModel)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             """Command docstring."""
             return "result"
 
@@ -73,7 +73,7 @@ class TestDecoratorEdgeCases:
 
         @click.command()
         @generate_click_parameters(SpecialNamesModel)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Should handle special names appropriately

@@ -1,6 +1,6 @@
 """Extended tests for Click integration to achieve 100% coverage."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 import pytest
@@ -204,7 +204,7 @@ class TestComplexFieldTypes:
 
         @click.command()
         @generate_click_parameters(TestConfig)
-        def test_command(**kwargs):
+        def test_command(**kwargs: Any):
             pass
 
         # Should not raise an error
@@ -225,7 +225,7 @@ class TestComplexFieldTypes:
 
         @click.command()
         @generate_click_parameters(TestConfig)
-        def test_command(**kwargs):
+        def test_command(**kwargs: Any):
             pass
 
         runner = CliRunner()
@@ -242,7 +242,7 @@ class TestConfigOption:
 
         @click.command()
         @decorator
-        def test_command(**kwargs):
+        def test_command(**kwargs: Any):
             pass
 
         # Check that the command has the config option
@@ -422,7 +422,7 @@ class TestRequiredOptionGeneration:
 
         @click.command()
         @generate_click_parameters(TestConfig)
-        def test_command(**kwargs):
+        def test_command(**kwargs: Any):
             pass
 
         runner = CliRunner()
@@ -444,7 +444,7 @@ class TestAddConfigOption:
 
         @click.command()
         @generate_click_parameters(TestConfig, add_config_option=False)
-        def test_command(**kwargs):
+        def test_command(**kwargs: Any):
             pass
 
         # Should not have --config option
@@ -465,7 +465,7 @@ class TestExplicitClickDecorators:
 
         @click.command()
         @generate_click_parameters(TestConfig)
-        def test_command(**kwargs):
+        def test_command(**kwargs: Any):
             pass
 
         # Should have the custom option
@@ -482,7 +482,7 @@ class TestExplicitClickDecorators:
 
         @click.command()
         @generate_click_parameters(TestConfig)
-        def test_command(**kwargs):
+        def test_command(**kwargs: Any):
             pass
 
         # Should handle the explicit argument

@@ -4,6 +4,8 @@ This module tests the bug where Click options with multiple=True are
 incorrectly converted to strings when used with generate_click_parameters.
 """
 
+from typing import Any
+
 import click
 from pydantic import Field
 
@@ -33,7 +35,7 @@ class TestMultipleOptionBug:
         @click.option("--files", multiple=True)
         @generate_click_parameters(TestArgs, strict=False)
         @click.pass_context
-        def test_command(ctx: click.Context, files: tuple[str, ...], **kwargs):
+        def test_command(ctx: click.Context, files: tuple[str, ...], **kwargs: Any):
             """Test command with multiple option."""
             kwargs["files"] = files
 
@@ -95,7 +97,7 @@ class TestMultipleOptionBug:
         @click.option("--files", multiple=True)
         @generate_click_parameters(TestArgs, strict=False)
         @click.pass_context
-        def test_command(ctx: click.Context, files: tuple[str, ...], **kwargs):
+        def test_command(ctx: click.Context, files: tuple[str, ...], **kwargs: Any):
             """Test command with multiple option."""
             kwargs["files"] = files
 
@@ -176,7 +178,7 @@ class TestMultipleOptionBug:
         @click.option("--files", multiple=True)
         @generate_click_parameters(TestArgs, strict=False)
         @click.pass_context
-        def test_command(ctx: click.Context, files: tuple[str, ...], **kwargs):
+        def test_command(ctx: click.Context, files: tuple[str, ...], **kwargs: Any):
             """Test command with edge cases."""
             kwargs["files"] = files
 
@@ -241,7 +243,7 @@ class TestMultipleOptionBug:
         @click.option("--files", multiple=True)
         @generate_click_parameters(TestArgs, strict=False)
         @click.pass_context
-        def test_command(ctx: click.Context, files: tuple[str, ...], **kwargs):
+        def test_command(ctx: click.Context, files: tuple[str, ...], **kwargs: Any):
             """Test command with type validation."""
             kwargs["files"] = files
 
@@ -289,7 +291,7 @@ class TestMultipleOptionBug:
         @click.option("--int-values", multiple=True, type=int)
         @click.option("--str-values", multiple=True)
         @click.pass_context
-        def test_command(ctx: click.Context, int_values: tuple[int, ...], str_values: tuple[str, ...], **kwargs):
+        def test_command(ctx: click.Context, int_values: tuple[int, ...], str_values: tuple[str, ...], **kwargs: Any):
             """Test command with different list types."""
             kwargs["int_values"] = int_values
             kwargs["str_values"] = str_values

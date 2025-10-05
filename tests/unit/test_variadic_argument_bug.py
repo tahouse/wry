@@ -4,6 +4,8 @@ This module tests the bug where variadic Click arguments (nargs=-1) are
 incorrectly converted to strings when used with generate_click_parameters.
 """
 
+from typing import Any
+
 import click
 from pydantic import Field
 
@@ -33,7 +35,7 @@ class TestVariadicArgumentBug:
         @click.command()
         @generate_click_parameters(TestArgs, strict=False)
         @click.pass_context
-        def test_command(ctx: click.Context, nodes: tuple[str, ...], **kwargs):
+        def test_command(ctx: click.Context, nodes: tuple[str, ...], **kwargs: Any):
             """Test command to demonstrate wry bug."""
             kwargs["nodes"] = nodes
 
@@ -118,7 +120,7 @@ class TestVariadicArgumentBug:
         @click.command()
         @generate_click_parameters(TestArgs, strict=False)
         @click.pass_context
-        def test_command(ctx: click.Context, nodes: tuple[str, ...], **kwargs):
+        def test_command(ctx: click.Context, nodes: tuple[str, ...], **kwargs: Any):
             """Test command to demonstrate wry bug."""
             kwargs["nodes"] = nodes
 

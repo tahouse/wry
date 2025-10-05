@@ -138,7 +138,7 @@ def create_auto_model(name: str, fields: dict[str, Any], **kwargs: Any) -> type[
         # Use it with Click
         @click.command()
         @generate_click_parameters(MyConfig)
-        def my_command(**kwargs):
+        def my_command(**kwargs: Any):
             config = MyConfig.from_click_context(**kwargs)
             print(f"Connecting to {config.host}:{config.port}")
         ```

@@ -1,6 +1,6 @@
 """Tests for AutoWryModel functionality."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 import pytest
@@ -36,7 +36,7 @@ class TestAutoWryModel:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             config = Config(**kwargs)
             click.echo(f"{config.name}: {config.count}")
 
@@ -74,7 +74,7 @@ class TestAutoWryModel:
         # Build CLI to verify
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # special should be an argument (positional)
@@ -113,7 +113,7 @@ class TestAutoWryModel:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             config = Config(**kwargs)
             click.echo(f"Optional: {config.optional_value}")
             click.echo(f"Ratio: {config.ratio}")
@@ -159,7 +159,7 @@ class TestCreateAutoModel:
 
         @click.command()
         @generate_click_parameters(UserConfig)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             config = UserConfig(**kwargs)
             click.echo(f"User: {config.username} ({config.email})")
             if config.admin:

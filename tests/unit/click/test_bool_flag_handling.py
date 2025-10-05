@@ -1,6 +1,6 @@
 """Test Click boolean flag handling."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import BaseModel
@@ -22,7 +22,7 @@ class TestBoolFlagHandling:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         params_by_name = {p.name: p for p in cmd.params}
@@ -48,7 +48,7 @@ class TestBoolFlagHandling:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         params_by_name = {p.name: p for p in cmd.params}

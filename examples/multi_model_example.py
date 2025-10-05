@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Example of using multiple Pydantic models with wry."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import Field
@@ -41,7 +41,7 @@ class SecurityArgs(WryModel):
 @generate_click_parameters(DatabaseArgs)
 @generate_click_parameters(SecurityArgs)
 @click.pass_context
-def manual_command(ctx: click.Context, **kwargs):
+def manual_command(ctx: click.Context, **kwargs: Any):
     """Example using manual kwargs splitting."""
     # Split kwargs manually
     server_kwargs = {k: v for k, v in kwargs.items() if k in ServerArgs.model_fields}
@@ -70,7 +70,7 @@ def manual_command(ctx: click.Context, **kwargs):
 @generate_click_parameters(DatabaseArgs)
 @generate_click_parameters(SecurityArgs)
 @click.pass_context
-def helper_command(ctx: click.Context, **kwargs):
+def helper_command(ctx: click.Context, **kwargs: Any):
     """Example using the split_kwargs_by_model helper."""
     # Use helper to split kwargs
     _ = split_kwargs_by_model(kwargs, ServerArgs, DatabaseArgs, SecurityArgs)
@@ -92,7 +92,7 @@ def helper_command(ctx: click.Context, **kwargs):
 @click.command("multi")
 @multi_model(ServerArgs, DatabaseArgs, SecurityArgs)
 @click.pass_context
-def multi_command(ctx: click.Context, **kwargs):
+def multi_command(ctx: click.Context, **kwargs: Any):
     """Example using the multi_model decorator.
 
     This approach applies all decorators in one go.

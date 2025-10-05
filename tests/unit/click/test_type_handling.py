@@ -1,6 +1,6 @@
 """Test Click type handling for various field types."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import BaseModel
@@ -23,7 +23,7 @@ class TestClickTypeHandling:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Check that correct Click types are assigned
@@ -55,7 +55,7 @@ class TestClickTypeHandling:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         params_by_name = {p.name: p for p in cmd.params}
@@ -75,7 +75,7 @@ class TestClickTypeHandling:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         params_by_name = {p.name: p for p in cmd.params}

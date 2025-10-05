@@ -1,6 +1,6 @@
 """Test automatic argument help injection into command docstrings."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from click.testing import CliRunner
@@ -22,7 +22,7 @@ class TestArgumentHelpInjection:
 
         @click.command()
         @Config.generate_click_parameters()
-        def copy(**kwargs):
+        def copy(**kwargs: Any):
             """Copy files from source to destination."""
             config = Config(**kwargs)
             click.echo(f"{config.source} -> {config.dest}")
@@ -46,7 +46,7 @@ class TestArgumentHelpInjection:
 
         @click.command()
         @Config.generate_click_parameters()
-        def process(**kwargs):
+        def process(**kwargs: Any):
             """Process input file and write to output."""
             config = Config(**kwargs)
             click.echo(f"Processing: {config.input_file} -> {config.output_file}")
@@ -71,7 +71,7 @@ class TestArgumentHelpInjection:
 
         @click.command()
         @Config.generate_click_parameters()
-        def run(**kwargs):
+        def run(**kwargs: Any):
             """Run with options only."""
             config = Config(**kwargs)
             click.echo(f"{config.name}: {config.count}")
@@ -90,7 +90,7 @@ class TestArgumentHelpInjection:
 
         @click.command()
         @Config.generate_click_parameters()
-        def analyze(**kwargs):
+        def analyze(**kwargs: Any):
             """Analyze the given file.
 
             This performs comprehensive analysis and generates a report.
@@ -122,7 +122,7 @@ class TestArgumentHelpInjection:
 
         @click.command()
         @Config.generate_click_parameters()
-        def copy(**kwargs):
+        def copy(**kwargs: Any):
             """Copy file."""
             config = Config(**kwargs)
             click.echo(f"{config.source} -> {config.dest}")

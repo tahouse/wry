@@ -1,6 +1,6 @@
 """Tests for multi-model support functionality."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 import pytest
@@ -142,7 +142,7 @@ class TestMultiModelDecorator:
         @click.command()
         @multi_model(DatabaseArgs, AppArgs)
         @click.pass_context
-        def cmd(ctx, **kwargs):
+        def cmd(ctx: click.Context, **kwargs: Any):
             configs = create_models(ctx, kwargs, DatabaseArgs, AppArgs)
             db = configs[DatabaseArgs]
             app = configs[AppArgs]
@@ -162,7 +162,7 @@ class TestMultiModelDecorator:
 
         @click.command()
         @multi_model(DatabaseArgs, AppArgs)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         runner = CliRunner()
@@ -184,7 +184,7 @@ class TestMultiModelDecorator:
         @click.command()
         @multi_model(DatabaseArgs, AppArgs, CacheArgs)
         @click.pass_context
-        def cmd(ctx, **kwargs):
+        def cmd(ctx: click.Context, **kwargs: Any):
             configs = create_models(ctx, kwargs, DatabaseArgs, AppArgs, CacheArgs)
             cache = configs[CacheArgs]
             click.echo(f"Cache: enabled={cache.enabled}, ttl={cache.ttl}")
@@ -210,7 +210,7 @@ class TestMultiModelDecorator:
         @click.command()
         @multi_model(DatabaseArgs, AppArgs)
         @click.pass_context
-        def cmd(ctx, **kwargs):
+        def cmd(ctx: click.Context, **kwargs: Any):
             configs = create_models(ctx, kwargs, DatabaseArgs, AppArgs)
             db = configs[DatabaseArgs]
             app = configs[AppArgs]
@@ -241,7 +241,7 @@ class TestMultiModelDecorator:
 
         @click.command()
         @multi_model(DatabaseArgs, AppArgs, strict=False)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Should work without error
@@ -294,7 +294,7 @@ class TestSingletonOption:
         @click.command()
         @generate_click_parameters(Model1, strict=False)
         @generate_click_parameters(Model2, strict=False)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             click.echo(f"Verbose: {kwargs.get('verbose', False)}")
 
         runner = CliRunner()

@@ -1,6 +1,6 @@
 """Test Click closure handling and argument extraction."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import BaseModel
@@ -26,7 +26,7 @@ class TestClosureHandling:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Check that custom class is preserved
@@ -55,7 +55,7 @@ class TestClosureHandling:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Should still work even if closure extraction fails
@@ -72,7 +72,7 @@ class TestClosureHandling:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Both should create arguments

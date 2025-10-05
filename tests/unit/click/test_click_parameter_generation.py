@@ -1,6 +1,6 @@
 """Test Click parameter generation from Pydantic models."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from pydantic import BaseModel, Field
@@ -60,7 +60,7 @@ class TestClickParameterGeneration:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Check parameters were generated
@@ -79,7 +79,7 @@ class TestClickParameterGeneration:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Find the port parameter
@@ -98,7 +98,7 @@ class TestClickParameterGeneration:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             pass
 
         # Find the show-env-vars option

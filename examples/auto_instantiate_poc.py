@@ -65,7 +65,7 @@ def auto_instantiate(model_class: type[T]) -> Callable[[Callable[..., Any]], Cal
             )
 
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any):
             # Extract context if present
             ctx = None
             func_args = args
@@ -207,7 +207,7 @@ def multi_auto_instantiate(*model_classes: type[BaseModel]) -> Callable[[Callabl
             raise ValueError(f"Function {func.__name__} missing parameters for models: {[m.__name__ for m in missing]}")
 
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any):
             # Extract context
             ctx = None
             func_args = args

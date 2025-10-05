@@ -3,7 +3,7 @@
 import json
 import tempfile
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import click
 from click.testing import CliRunner
@@ -24,7 +24,7 @@ class TestJsonConfigLoading:
 
         @click.command()
         @generate_click_parameters(Config)
-        def cmd(**kwargs):
+        def cmd(**kwargs: Any):
             return kwargs
 
         # Check that config option exists
@@ -45,7 +45,7 @@ class TestJsonConfigLoading:
         @click.command()
         @generate_click_parameters(Config)
         @click.pass_context
-        def cmd(ctx, **kwargs):
+        def cmd(ctx: click.Context, **kwargs: Any):
             config = Config.from_click_context(ctx, **kwargs)
             return {"database_url": config.database_url, "port": config.port, "debug": config.debug}
 
@@ -78,7 +78,7 @@ class TestJsonConfigLoading:
         @click.command()
         @generate_click_parameters(Config)
         @click.pass_context
-        def cmd(ctx, **kwargs):
+        def cmd(ctx: click.Context, **kwargs: Any):
             config = Config.from_click_context(ctx, **kwargs)
             return {"name": config.name, "value": config.value}
 
