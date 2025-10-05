@@ -27,6 +27,86 @@
 
 ### High Priority
 
+- [ ] **Short option aliases for CLI options**
+  - Allow specifying short form: `--node/-n`, `--cluster/-c`
+  - Challenge: Avoiding conflicts between short options
+  - Possible API ideas:
+    - Field metadata: `Field(..., short='n')`
+    - Annotation: `Annotated[str, AutoOption(short='n')]`
+    - Auto-generate from first letter (with conflict detection)
+    - Allow custom mapping: `short_options = {"node": "n", "cluster": "c"}`
+  - Need to handle conflicts gracefully (warn or error)
+  - Should work with AutoWryModel and WryModel
+
+- [ ] **Boolean flag negation (--no-flag / --skip-flag)**
+  - Auto-generate negative form for boolean flags
+  - Examples: `--debug/--no-debug`, `--verbose/--quiet`, `--enable/--disable`
+  - Possible API ideas:
+    - Auto from field name: `enable_feature` → `--enable-feature/--no-enable-feature`
+    - Custom negative: `Field(..., negative='--quiet')` for `verbose` field
+    - Pattern-based: `use_cache` → `--use-cache/--no-cache` or `--cache/--no-cache`
+    - Click supports this: `click.option('--flag/--no-flag')`
+  - Should respect user's choice (some bools shouldn't have negation)
+  - May need new marker: `AutoFlag(negative=True)` vs `AutoFlag(negative=False)`
+
+- [ ] **Document/improve environment variable support for arguments**
+  - Current behavior: Arguments CAN use env vars via wry's layer system
+    - `from_click_context()` applies env vars to ALL fields (including arguments)
+    - Env var naming: `{prefix}{field_name.upper()}` (e.g., `MYAPP_INPUT_FILE`)
+    - Already shows in `--show-env-vars` output
+  - Issue: Not obvious to users that this works
+    - Click's `click.argument()` doesn't support `envvar=` parameter natively
+    - Help text doesn't indicate env var can be used
+    - Only works when using `from_click_context()`, not plain `Config(**kwargs)`
+  - Possible improvements:
+    - Add env var info to argument docstring injection (like "Can also be set via MYAPP_INPUT_FILE")
+    - Document this behavior prominently in README and examples
+    - Consider adding note to `--help` output for arguments
+    - Maybe add a section in help text: "Arguments can also be provided via environment variables"
+  - Related: Ensure tests cover argument + env var interaction
+
+- [x] **Custom CLI option names (beyond underscore-to-hyphen conversion)**
+  - **✅ FULLY IMPLEMENTED (v0.3.2+): Automatic alias-based option generation!**
+    - ✅ Aliases automatically control auto-generated CLI option names
+    - ✅ Aliases automatically control environment variable names
+    - ✅ `from_click_context()` recognizes aliases in kwargs
+    - ✅ JSON config works with both field names and aliases
+    - ✅ Source tracking works correctly with aliases
+    - ✅ Comprehensive test coverage (tests/unit/click/test_field_alias_with_click_options.py)
+    - ✅ Examples: `examples/autowrymodel_comprehensive.py` and `examples/wrymodel_comprehensive.py`
+    - ✅ Documented in README under "Advanced Usage"
+
+    **Simple pattern (auto-generated options):**
+    ```python
+    class Config(AutoWryModel):
+        model_config = ConfigDict(populate_by_name=True)
+
+        # Concise Python field: db_url
+        # Alias controls CLI: --database-url
+        # Env var: DB_DATABASE_URL
+        db_url: str = Field(alias="database_url", default="sqlite:///app.db")
+    ```
+
+    **Advanced pattern (explicit click.option for short options):**
+    ```python
+    class Config(AutoWryModel):
+        model_config = ConfigDict(populate_by_name=True)
+
+        database_connection_string: Annotated[
+            str,
+            click.option("--db-url", "-d")
+        ] = Field(alias='db_url', default="sqlite:///app.db")
+    ```
+
+  - Future enhancements:
+    - Make `generate_click_parameters()` auto-use alias for option name
+    - Add `cli_name` parameter to Field: `Field(..., cli_name="db-url")`
+    - Add to AutoOption: `Annotated[str, AutoOption(name="db-url", short="d")]`
+    - Auto-generate short options: `AutoOption(short=True)` → first letter if no conflict
+    - Handle env var naming (use alias or field name?)
+    - JSON config files (use alias or field name?)
+  - Related to short option aliases feature above
+
 - [ ] Add support for YAML configuration files
 - [ ] Add support for TOML configuration files
 - [ ] Create more comprehensive examples

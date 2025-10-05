@@ -52,7 +52,7 @@ class WryModel(BaseModel):
         ```
     """
 
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(arbitrary_types_allowed=True, validate_by_name=True, validate_by_alias=True)
 
     # Class variables that should not trigger Pydantic warnings
     env_prefix: ClassVar[str] = ""
@@ -450,7 +450,7 @@ class WryModel(BaseModel):
             @click.command()
             @generate_click_parameters(MyConfig)
             @click.pass_context
-            def my_command(ctx, **kwargs):
+            def my_command(ctx: click.Context, **kwargs: Any):
                 config = MyConfig.from_click_context(ctx, **kwargs)
                 print(f"Hello {config.name}")
                 print(f"Source: {config.source.name}")  # Accurate source
@@ -474,18 +474,41 @@ class WryModel(BaseModel):
             strict = cls.model_config.get("extra", "ignore") == "forbid"
 
         if strict:
-            # Check for extra fields
-            extra_fields = set(kwargs.keys()) - set(cls.model_fields.keys())
+            # Build alias set for validation
+            valid_aliases = {field_info.alias for field_info in cls.model_fields.values() if field_info.alias}
+            # Check for extra fields (allow both field names and aliases)
+            valid_keys = set(cls.model_fields.keys()) | valid_aliases
+            extra_fields = set(kwargs.keys()) - valid_keys
             if extra_fields:
                 raise ValueError(f"Extra fields not allowed: {extra_fields}")
 
-        # Filter kwargs to only include model fields
+        # Build alias-to-field mapping for handling Pydantic aliases
+        alias_to_field: dict[str, str] = {}
+        for field_name, field_info in cls.model_fields.items():
+            if field_info.alias:
+                alias_to_field[field_info.alias] = field_name
+
+        # Filter kwargs to include both field names AND aliases
         model_fields = set(cls.model_fields.keys())
-        filtered_kwargs = {k: v for k, v in kwargs.items() if k in model_fields}
+        filtered_kwargs: dict[str, Any] = {}
+
+        for k, v in kwargs.items():
+            if k in model_fields:
+                # Direct field name match
+                filtered_kwargs[k] = v
+            elif k in alias_to_field:
+                # Alias match - map to field name
+                field_name = alias_to_field[k]
+                filtered_kwargs[field_name] = v
 
         # If kwargs are empty but ctx.params has values, use those (for test compatibility)
         if not filtered_kwargs and hasattr(ctx, "params") and ctx.params:
-            filtered_kwargs = {k: v for k, v in ctx.params.items() if k in model_fields}
+            for k, v in ctx.params.items():
+                if k in model_fields:
+                    filtered_kwargs[k] = v
+                elif k in alias_to_field:
+                    field_name = alias_to_field[k]
+                    filtered_kwargs[field_name] = v
 
         # Get JSON data from context if available
         json_data = ctx.obj.get("json_data", {}) if ctx.obj else {}
@@ -508,19 +531,33 @@ class WryModel(BaseModel):
         for field_name, value in env_values.items():
             config_data[field_name] = TrackedValue(value, ValueSource.ENV)
 
-        # 3. Override with JSON values
-        for field_name, value in json_data.items():
-            if field_name in cls.model_fields:
+        # 3. Override with JSON values (handle both field names and aliases)
+        for key, value in json_data.items():
+            if key in cls.model_fields:
+                # Direct field name match
+                config_data[key] = TrackedValue(value, ValueSource.JSON)
+            elif key in alias_to_field:
+                # Alias match - map to field name
+                field_name = alias_to_field[key]
                 config_data[field_name] = TrackedValue(value, ValueSource.JSON)
 
         # 4. Override with CLI values from kwargs (but respect Click's source info)
         for field_name in cls.model_fields:
             if field_name in filtered_kwargs:
                 value = filtered_kwargs[field_name]
+                field_info = cls.model_fields[field_name]
 
                 # Check Click's parameter source if available
+                # Try both alias and field name since Click might know it by either
                 try:
-                    param_source = ctx.get_parameter_source(field_name)
+                    # First try the alias if it exists (for explicit click.option with custom names)
+                    param_name = field_info.alias if field_info.alias else field_name
+                    param_source = ctx.get_parameter_source(param_name)
+
+                    # If alias didn't work, try field name
+                    if param_source is None and field_info.alias:
+                        param_source = ctx.get_parameter_source(field_name)
+
                     if param_source is not None:
                         source_str = str(param_source)
                         # Only override if it's actually from CLI
@@ -648,7 +685,7 @@ class WryModel(BaseModel):
             @click.command()
             @MyConfig.generate_click_parameters()
             @click.pass_context
-            def cli(ctx, **kwargs):
+            def cli(ctx: click.Context, **kwargs: Any):
                 config = MyConfig.from_click_context(ctx, **kwargs)
             ```
 

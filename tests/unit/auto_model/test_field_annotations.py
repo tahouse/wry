@@ -1,6 +1,6 @@
 """Test coverage gaps in auto_model.py module."""
 
-from typing import Annotated, Any
+from typing import Annotated
 
 from pydantic import Field
 
@@ -67,15 +67,13 @@ class TestAutoWryModelCoverage:
     def test_auto_dry_model_field_without_annotation(self):
         """Test AutoWryModel with a field that has no type annotation."""
 
-        from typing import Any
-
         class ConfigMixedAnnotations(AutoWryModel):
             # Field with annotation
             name: str = Field(default="test")
             # Field with type - Pydantic requires annotations
             count: int = Field(default=0)
-            # Field with explicit annotation in FieldInfo
-            value: Any = Field(default=1.0, annotation=float)
+            # Field with proper type annotation (no deprecated annotation parameter)
+            value: float = Field(default=1.0)
 
         # Check annotations were created
         assert "count" in ConfigMixedAnnotations.__annotations__
@@ -92,12 +90,12 @@ class TestAutoWryModelCoverage:
         assert args[0] is int  # We gave it int annotation
         assert AutoClickParameter.OPTION in args[1:]
 
-        # Value should use the explicit annotation from FieldInfo
+        # Value should use the type annotation
         value_annotation = ConfigMixedAnnotations.__annotations__["value"]
         origin = get_origin(value_annotation)
         assert str(origin) == str(Annotated)
         args = get_args(value_annotation)
-        assert args[0] == Any  # We gave it Any, but Field has annotation=float
+        assert args[0] is float  # Type annotation is float
         assert AutoClickParameter.OPTION in args[1:]
 
     def test_auto_dry_model_non_field_annotation(self):
@@ -121,12 +119,12 @@ class TestAutoWryModelCoverage:
             # Field exists and should have been converted to Annotated[str, AutoOption]
             pass
 
-    def test_auto_dry_model_field_with_annotation_in_field_info(self):
-        """Test AutoWryModel processes FieldInfo with annotation (lines 88-89)."""
+    def test_auto_dry_model_field_with_type_annotation(self):
+        """Test AutoWryModel processes fields with type annotations."""
 
         class ConfigWithFieldAnnotation(AutoWryModel):
-            # Field with annotation in FieldInfo but no type hint
-            value: Any = Field(default=1.0, annotation=float)
+            # Field with proper type annotation
+            value: float = Field(default=1.0)
 
         # Check the annotation was processed
         assert "value" in ConfigWithFieldAnnotation.__annotations__
@@ -135,7 +133,7 @@ class TestAutoWryModelCoverage:
         """Test create_auto_model with FieldInfo objects (lines 134-138)."""
         fields = {
             "name": Field(default="test", description="Name field"),
-            "count": Field(default=0, annotation=int),
+            "count": Field(default=0, description="Count field"),
         }
 
         Model = create_auto_model("TestModel", fields)

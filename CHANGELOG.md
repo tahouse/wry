@@ -7,6 +7,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-10-04
+
+### Added
+
+- **Automatic Pydantic alias-based CLI option generation** 🎉
+  - Aliases now automatically control generated CLI option names and environment variable names
+  - Example: `db_url` field with `alias="database_url"` generates `--database-url` option and `DB_DATABASE_URL` env var
+  - No configuration required - works out of the box!
+  - `WryModel` now sets `validate_by_name=True` and `validate_by_alias=True` by default
+  - Full source tracking support (CLI/ENV/JSON/DEFAULT) with aliases
+  - JSON config files accept both field names and aliases
+  - New example: `examples/field_alias_example.py` demonstrating automatic alias-based generation
+  - Note: For short options (e.g., `-v`), continue using explicit `click.option()` decorators as shown in `examples/auto_model_example.py`
+  - Comprehensive test suite: 20 tests covering all alias scenarios including precedence chains
+
+### Changed
+
+- **Pydantic v2.11+ compatibility** - replaced deprecated `populate_by_name` with `validate_by_name` and `validate_by_alias`
+- `WryModel.model_config` now includes `validate_by_name=True` and `validate_by_alias=True` by default
+- `generate_click_parameters()` now uses field aliases for auto-generated option names
+- `get_env_var_names()` now uses field aliases for environment variable names
+- Updated all documentation (README, AI_KNOWLEDGE_BASE, TODO) with alias feature details
+
+### Fixed
+
+- Source tracking now works correctly when using Pydantic aliases
+- JSON config loading properly handles both field names and aliases
+- Parameter source detection checks both alias and field name for Click compatibility
+- Removed all deprecated `Field(annotation=...)` usage in tests
+- All deprecation warnings eliminated for Pydantic v3 compatibility
+- Click now properly validates required arguments and options, providing native Click error messages
+- Fixed type display in `--show-env-vars` to correctly extract types from Annotated fields
+
+### Technical Details
+
+- Modified `from_click_context()` to build alias-to-field mapping and handle both field names and aliases
+- Enhanced kwargs filtering to accept both field names and aliases, mapping aliases back to field names for source tracking
+- Updated JSON config handling to map aliases to field names
+- Improved parameter source checking with alias fallback
+- Updated `generate_click_parameters()` to use aliases for option name generation
+- Updated `get_env_var_names()` to use aliases for environment variable names
+- Modified argument generation to properly handle `required` flag based on field defaults and environment variables
+- Removed forced `required=False` override in `extract_and_modify_argument_decorator()` to preserve original Click behavior
+- Improved `print_env_vars()` to correctly extract base types from Annotated fields
+- Consolidated 16 example files into 3 comprehensive examples for easier discovery:
+  - `examples/autowrymodel_comprehensive.py` - All AutoWryModel features
+  - `examples/wrymodel_comprehensive.py` - WryModel with source tracking
+  - `examples/multimodel_comprehensive.py` - Multi-model usage
+- All 436 tests pass with 92%+ code coverage
+
 ## [0.3.1] - 2025-10-02
 
 ### Fixed

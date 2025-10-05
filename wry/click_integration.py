@@ -378,7 +378,9 @@ def generate_click_parameters(
 
         if field_type == AutoClickParameter.OPTION or field_type == AutoClickParameter.REQUIRED_OPTION:
             # Auto-generate Click option from Field info
-            option_name = f"--{field_name.replace('_', '-')}"
+            # Use alias if available, otherwise use field name
+            name_for_option = field_info.alias if field_info.alias else field_name
+            option_name = f"--{name_for_option.replace('_', '-')}"
 
             # Check if field is required first (needed to decide on default handling)
             is_required = field_info.is_required() or field_type == AutoClickParameter.REQUIRED_OPTION
@@ -457,7 +459,9 @@ def generate_click_parameters(
 
             # Get the environment variable prefix
             env_prefix = getattr(model_class, "env_prefix", "DRYCLI_")
-            env_var_name = f"{env_prefix}{field_name.upper()}"
+            # Use alias for env var name if available, otherwise use field name
+            name_for_env = field_info.alias if field_info.alias else field_name
+            env_var_name = f"{env_prefix}{name_for_env.upper()}"
 
             env_var_set = env_var_name in os.environ
 
@@ -508,8 +512,18 @@ def generate_click_parameters(
             elif base_type is not str:  # Only specify type if not string (Click default)
                 click_kwargs["type"] = base_type
 
-            # Note: required=False to allow --config to replace arg
-            arguments.append(click.argument(argument_name, **click_kwargs, required=False))
+            # Check if field has a default or if env var is set
+            import os
+
+            env_prefix = getattr(model_class, "env_prefix", "")
+            name_for_env = field_info.alias if field_info.alias else field_name
+            env_var_name = f"{env_prefix}{name_for_env.upper()}"
+            env_var_set = env_var_name in os.environ
+
+            # Mark as not required if field has default or env var is set
+            is_required_arg = field_info.is_required() and not env_var_set
+
+            arguments.append(click.argument(argument_name, **click_kwargs, required=is_required_arg))
 
             # Track argument description for docstring injection
             if field_info.description:
@@ -633,7 +647,7 @@ def extract_and_modify_argument_decorator(
     """
     # Default values - use a safe fallback
     param_decls: list[str] = ["argument"]
-    attrs: dict[str, Any] = {"required": False}
+    attrs: dict[str, Any] = {}  # Don't override required - let Click handle it
 
     # Try to extract from closure, but don't rely on it
     try:
@@ -658,7 +672,7 @@ def extract_and_modify_argument_decorator(
                     for k, v in dict_contents.items():
                         if isinstance(k, str):
                             attrs[k] = v
-                    attrs["required"] = False  # Always override to make optional
+                    # Don't override required - preserve original setting
 
                 # Handle Click parameter classes
                 elif isinstance(contents, type):

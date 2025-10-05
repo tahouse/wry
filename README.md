@@ -56,7 +56,10 @@ if __name__ == "__main__":
     main()
 ```
 
-**Note**: Currently, `generate_click_parameters()` passes individual parameters as kwargs to your function. You need to instantiate the model yourself. See the [Future Features](#future-features) section for a potential cleaner API.
+**See comprehensive examples:**
+- `examples/autowrymodel_comprehensive.py` - All AutoWryModel features including aliases
+- `examples/wrymodel_comprehensive.py` - WryModel with source tracking
+- `examples/multimodel_comprehensive.py` - Multi-model usage
 
 Run it:
 
@@ -347,6 +350,76 @@ class Config(WryModel):
         description="Timeout in seconds"
     )
 ```
+
+### Using Pydantic Aliases for Custom CLI Names
+
+**New in v0.3.2+**: Pydantic field aliases automatically control the generated CLI option names and environment variable names!
+
+This allows you to have concise Python field names while exposing descriptive CLI options:
+
+```python
+from pydantic import Field
+from wry import AutoWryModel
+
+class DatabaseConfig(AutoWryModel):
+    env_prefix = "DB_"
+
+    # Concise Python field name: db_url
+    # Alias controls CLI option: --database-url
+    # Environment variable: DB_DATABASE_URL
+    db_url: str = Field(
+        alias="database_url",
+        default="sqlite:///app.db",
+        description="Database connection URL"
+    )
+
+    pool_size: int = Field(
+        alias="connection_pool_size",
+        default=5,
+        description="Maximum connection pool size"
+    )
+```
+
+**How it works:**
+
+- **Python field**: `db_url` (concise, easy to type)
+- **CLI option**: `--database-url` (descriptive, user-friendly)
+- **Environment variable**: `DB_DATABASE_URL` (consistent with CLI)
+- **JSON config**: Accepts both `db_url` and `database_url`
+
+**Requirements:**
+
+- **None!** `WryModel` automatically sets `validate_by_name=True` and `validate_by_alias=True`
+  - This tells Pydantic to accept both field names and aliases
+  - No need to configure anything - it just works!
+- Aliases automatically control option names, env var names, and help text
+
+**Full support (v0.3.2+):**
+
+- ✅ Aliases automatically control auto-generated option names
+- ✅ Environment variables use alias names (consistent with CLI)
+- ✅ Source tracking works correctly
+- ✅ JSON config accepts both field names and aliases
+
+**Why this feature exists:**
+
+Before v0.3.2, if you wanted custom CLI option names, you had to use explicit `click.option()` decorators for every field. The alias feature eliminates this boilerplate for the common case where you just want different names.
+
+**For advanced use cases** (short options, custom Click types):
+
+You can still combine aliases with explicit `click.option()` decorators:
+
+```python
+class Config(AutoWryModel):
+    # Explicit click.option for short option support
+    verbose: Annotated[int, click.option("-v", "--verbose", count=True)] = Field(default=0)
+```
+
+See `examples/autowrymodel_comprehensive.py` for examples of explicit Click decorators.
+
+**See also:**
+- `examples/autowrymodel_comprehensive.py` - Complete AutoWryModel example with aliases
+- `examples/wrymodel_comprehensive.py` - WryModel with aliases and source tracking
 
 ## Development
 

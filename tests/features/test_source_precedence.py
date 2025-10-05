@@ -292,11 +292,6 @@ class TestSourcePrecedence:
         result = runner.invoke(test_command, [])
         assert result.exit_code != 0
         # The error comes from Click (missing required option) or Pydantic (validation error)
-        # Check both stdout and the exception message
-        error_text = str(result.exception) if result.exception else result.output
-        assert (
-            "Missing option" in error_text
-            or "required" in error_text.lower()
-            or "Field required" in error_text
-            or "validation error" in error_text
-        )
+        # Check both output and exception
+        error_text = result.output + (str(result.exception) if result.exception else "")
+        assert "Missing option" in error_text or "required" in error_text.lower() or "Field required" in error_text

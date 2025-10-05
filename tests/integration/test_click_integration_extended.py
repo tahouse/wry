@@ -323,11 +323,10 @@ class TestExtractAndModifyArgument:
         def dummy():
             pass
 
-        # The modified decorator should create an argument with required=False
-        # We can't easily verify this without inspecting Click internals
-        # But we can check the info dict
+        # The modified decorator preserves the original required setting
+        # We can check the info dict
         assert "param_decls" in info
-        assert info["required"] is False
+        assert info["required"] is True  # Preserves original setting
 
     def test_extract_without_closure(self):
         """Test extracting from a decorator without proper closure."""
@@ -342,7 +341,8 @@ class TestExtractAndModifyArgument:
         assert callable(modified)
         # Should have default info
         assert "param_decls" in info
-        assert info["required"] is False
+        # Without closure, no required attribute is set (defaults to Click's default behavior)
+        assert "required" not in info or info.get("required") is None
 
     def test_extract_with_exception(self):
         """Test that extraction handles exceptions gracefully."""
@@ -360,7 +360,8 @@ class TestExtractAndModifyArgument:
         assert callable(modified)
         # Should have safe defaults
         assert "param_decls" in info
-        assert info["required"] is False
+        # Without proper closure, no required attribute is extracted
+        assert "required" not in info or info.get("required") is None
 
 
 class TestBuildConfigWithSources:

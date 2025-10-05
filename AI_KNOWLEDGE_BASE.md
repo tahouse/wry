@@ -1,7 +1,7 @@
 # wry - Comprehensive AI/LLM Knowledge Base
 
-**Last Updated**: 2025-10-01
-**Version**: 0.2.3+
+**Last Updated**: 2025-10-04
+**Version**: 0.3.2+
 **Purpose**: Complete reference for AI assistants and LLMs to understand wry without reading the entire codebase
 
 ---
@@ -14,11 +14,12 @@
 2. Automatically generating Click CLI parameters
 3. Supporting multiple configuration sources (CLI/ENV/JSON/DEFAULT)
 4. Tracking exactly where each value came from
-5. Enforcing strict precedence: CLI > ENV > JSON > DEFAULT
+5. Enforcing strict precedence: CLI > JSON > ENV > DEFAULT
+6. **NEW v0.3.2**: Automatic alias-based CLI option generation
 
 **Key Innovation**: Single source of truth for configuration with comprehensive source tracking.
 
-**Stats**: 918 lines of code, 407 tests (all passing), 92% coverage, supports Python 3.10-3.12
+**Stats**: 436 tests (all passing), 92%+ coverage, supports Python 3.10-3.12, Pydantic v2.11+ compatible
 
 ---
 
@@ -75,14 +76,25 @@ tests/
     └── multi_model/        # Multi-model
 
 examples/
-├── simple_cli.py                          # Basic usage
-├── source_tracking_comprehensive.py       # ⭐ All 4 sources demo
-├── source_tracking_example.py
-├── explicit_argument_help.py              # Argument help
-├── multi_model_example.py                 # Multiple models
-├── field_exclusion_example.py             # AutoExclude
-└── sample_config.json                     # Sample config
+├── autowrymodel_comprehensive.py          # ⭐ Complete AutoWryModel features
+│   - Simple options, arguments, constraints
+│   - Pydantic aliases for custom CLI names
+│   - Explicit click.option() for short flags
+│   - Field exclusion with AutoExclude
+│   - Environment variables and JSON config
+├── wrymodel_comprehensive.py              # ⭐ WryModel with source tracking
+│   - Manual field annotation (AutoOption/AutoArgument)
+│   - Full source tracking (CLI/ENV/JSON/DEFAULT)
+│   - Pydantic aliases with WryModel
+│   - Configuration precedence demonstration
+├── multimodel_comprehensive.py            # Multi-model usage
+│   - Multiple models in one CLI
+│   - split_kwargs_by_model
+│   - create_models helper
+└── config.json                            # Sample config
 ```
+
+**Note**: v0.3.2 consolidated 16 example files into 3 comprehensive examples for easier discovery and learning.
 
 ---
 
@@ -96,11 +108,17 @@ examples/
 
 ```python
 class WryModel(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        validate_by_name=True,      # NEW v0.3.2: Accept field names
+        validate_by_alias=True       # NEW v0.3.2: Accept aliases
+    )
     env_prefix: ClassVar[str] = ""  # Environment variable prefix
     _value_sources: dict[str, ValueSource] = {}  # Tracks where values came from
     _accessor_instances: dict[str, Any] = {}  # Caches property accessors
 ```
+
+**Note**: `validate_by_name=True` and `validate_by_alias=True` enable Pydantic alias support out of the box (v0.3.2+). This allows fields to be populated using either their field name or alias, which is essential for the alias-based CLI option generation feature.
 
 **Property Accessors** (lazy-initialized, cached):
 
@@ -499,7 +517,7 @@ Converts constraint dict to human-readable list:
 
 ```python
 @classmethod
-def __init_subclass__(cls, **kwargs):
+def __init_subclass__(cls, **kwargs: Any):
     """Called when subclass is defined."""
     super().__init_subclass__(**kwargs)
 
@@ -538,7 +556,7 @@ def __init_subclass__(cls, **kwargs):
 
 **Result**: All fields become `--options` unless explicitly configured.
 
-**`create_auto_model(name, fields, **kwargs)`**:
+**`create_auto_model(name, fields, **kwargs: Any)`**:
 Dynamic model creation at runtime.
 
 ### 8. `wry/multi_model.py` - Multi-Model Support (48 lines, 100% coverage)
@@ -574,11 +592,11 @@ db = configs[DatabaseConfig]
 ```python
 # Decorator that applies generate_click_parameters for each model
 @multi_model(ServerConfig, DatabaseConfig)
-def serve(ctx, **kwargs):
+def serve(ctx: click.Context, **kwargs: Any):
     # All options from both models available
 ```
 
-**`singleton_option(*args, **kwargs)`**:
+**`singleton_option(*args, **kwargs: Any)`**:
 Wrapper around `click.option` that prevents duplicate options.
 
 ### 9. `wry/help_system.py` - Documentation System (89 lines)
@@ -674,7 +692,7 @@ CLICK PROCESSES (order matters!)
 │   └─> Click detects: ParameterSource.ENVIRONMENT
 │
 └─> 4. CALL COMMAND FUNCTION
-    └─> def main(ctx, **kwargs):
+    └─> def main(ctx: click.Context, **kwargs: Any):
         kwargs = {"host": "api.com", "port": 9000}
 │
 ↓
@@ -877,14 +895,14 @@ class Config(AutoWryModel):
 ```python
 # NO source tracking ❌
 @Config.generate_click_parameters()
-def main(**kwargs):
+def main(**kwargs: Any):
     config = Config(**kwargs)
     # config.source.* always shows CLI
 
 # FULL source tracking ✅
 @Config.generate_click_parameters()
 @click.pass_context
-def main(ctx, **kwargs):
+def main(ctx: click.Context, **kwargs: Any):
     config = Config.from_click_context(ctx, **kwargs)
     # config.source.* shows actual source
 ```
@@ -1007,7 +1025,7 @@ class Config(AutoWryModel):
 
 @click.command()
 @Config.generate_click_parameters()
-def main(**kwargs):
+def main(**kwargs: Any):
     config = Config(**kwargs)
     print(f"{config.host}:{config.port}")
 ```
@@ -1034,7 +1052,7 @@ class Config(AutoWryModel):
 @click.command()
 @Config.generate_click_parameters()
 @click.pass_context  # ⚠️ Required
-def main(ctx, **kwargs):  # ⚠️ ctx parameter required
+def main(ctx: click.Context, **kwargs: Any):  # ⚠️ ctx parameter required
     config = Config.from_click_context(ctx, **kwargs)  # ⚠️ Not Config(**kwargs)
 
     # Access sources
@@ -1062,7 +1080,7 @@ class Config(WryModel):
 
 @click.command()
 @Config.generate_click_parameters()
-def main(**kwargs):
+def main(**kwargs: Any):
     config = Config(**kwargs)
     # Usage: python app.py input.txt output.txt --format yaml --verbose
 ```
@@ -1106,7 +1124,7 @@ class DatabaseConfig(WryModel):
 @click.command()
 @multi_model(ServerConfig, DatabaseConfig)
 @click.pass_context
-def serve(ctx, **kwargs):
+def serve(ctx: click.Context, **kwargs: Any):
     configs = create_models(ctx, kwargs, ServerConfig, DatabaseConfig)
     server = configs[ServerConfig]
     db = configs[DatabaseConfig]
@@ -1136,6 +1154,85 @@ class Config(AutoWryModel):
 - Computed values
 - Polymorphic validation fields
 - Secrets not from CLI
+
+### Pattern 7: Pydantic Aliases for Custom CLI Names (v0.3.2+)
+
+**New in v0.3.2**: Pydantic field aliases automatically control CLI option names and environment variable names!
+
+```python
+from pydantic import Field
+from wry import AutoWryModel
+
+class DatabaseConfig(AutoWryModel):
+    env_prefix = "DB_"
+
+    # Concise Python field name: db_url
+    # Alias controls CLI option: --database-url
+    # Environment variable: DB_DATABASE_URL
+    db_url: str = Field(
+        alias="database_url",
+        default="sqlite:///app.db",
+        description="Database connection URL"
+    )
+
+    pool_size: int = Field(
+        alias="connection_pool_size",
+        default=5,
+        description="Maximum connection pool size"
+    )
+
+@click.command()
+@DatabaseConfig.generate_click_parameters()
+@click.pass_context
+def main(ctx: click.Context, **kwargs: Any):
+    config = DatabaseConfig.from_click_context(ctx, **kwargs)
+
+    # Access via concise field names
+    print(f"URL: {config.db_url}")
+    print(f"Pool: {config.pool_size}")
+
+    # Source tracking works
+    print(f"URL from: {config.source.db_url.value}")
+```
+
+**How it works**:
+
+- **Python field**: `db_url` (concise, easy to type in code)
+- **CLI option**: `--database-url` (descriptive, user-friendly)
+- **Environment variable**: `DB_DATABASE_URL` (consistent with CLI)
+- **JSON config**: Accepts both `db_url` and `database_url`
+
+**Requirements**:
+
+- **None!** WryModel automatically sets `validate_by_name=True` and `validate_by_alias=True`
+- No configuration needed - it just works!
+
+**Full support**:
+
+- ✅ Aliases automatically control auto-generated option names
+- ✅ Environment variables use alias names (consistent with CLI)
+- ✅ Source tracking works correctly
+- ✅ JSON config accepts both field names and aliases
+
+**Why this pattern exists:**
+
+Before v0.3.2, custom CLI option names required explicit `click.option()` decorators for every field. The alias feature eliminates this boilerplate for the common case.
+
+**For advanced use cases** (short options, custom Click types), combine aliases with explicit decorators:
+
+```python
+class Config(AutoWryModel):
+    # Explicit click.option for short option support
+    verbose: Annotated[int, click.option("-v", "--verbose", count=True)] = Field(default=0)
+
+    # Or combine with aliases for descriptive field names
+    database_connection_string: Annotated[
+        str,
+        click.option("--db-url", "-d", default="sqlite:///app.db")
+    ] = Field(alias='db_url', default="sqlite:///app.db")
+```
+
+See `examples/autowrymodel_comprehensive.py` and `examples/wrymodel_comprehensive.py` for complete examples.
 
 ---
 
@@ -1280,10 +1377,10 @@ format_constraint_text(constraints) → list[str]
 multi_model(*model_classes, strict=False) → decorator
 create_models(ctx, kwargs, *model_classes) → dict[type, instance]
 split_kwargs_by_model(kwargs, *model_classes) → dict[type, dict]
-singleton_option(*args, **kwargs) → decorator
+singleton_option(*args, **kwargs: Any) → decorator
 
 # Auto Model
-create_auto_model(name, fields, **kwargs) → type[AutoWryModel]
+create_auto_model(name, fields, **kwargs: Any) → type[AutoWryModel]
 
 # Field Utilities
 extract_field_constraints(field_info) → dict[str, Any]
@@ -1442,7 +1539,7 @@ python -c "import wry; print(wry.__version__)"
 # WRONG ❌
 @click.command()
 @Config.generate_click_parameters()
-def main(**kwargs):  # No ctx parameter
+def main(**kwargs: Any):  # No ctx parameter
     config = Config(**kwargs)  # Direct instantiation
     # Result: All sources show as CLI
 
@@ -1450,7 +1547,7 @@ def main(**kwargs):  # No ctx parameter
 @click.command()
 @Config.generate_click_parameters()
 @click.pass_context  # Add this
-def main(ctx, **kwargs):  # Add ctx parameter
+def main(ctx: click.Context, **kwargs: Any):  # Add ctx parameter
     config = Config.from_click_context(ctx, **kwargs)  # Use this
     # Result: Accurate source tracking
 ```
@@ -1647,7 +1744,7 @@ config_data = {"host": TrackedValue("api.com", ValueSource.CLI)}
 ### Why model_dump() Excludes Accessors?
 
 ```python
-def model_dump(self, **kwargs) -> dict[str, Any]:
+def model_dump(self, **kwargs: Any) -> dict[str, Any]:
     data = super().model_dump(**kwargs)
     accessor_keys = {"source", "minimum", "maximum", "constraints", "defaults"}
     return {k: v for k, v in data.items() if k not in accessor_keys}
@@ -1806,7 +1903,7 @@ class Config(AutoWryModel):
 
 ```python
 @click.pass_context
-def main(ctx, **kwargs):
+def main(ctx: click.Context, **kwargs: Any):
     config = Config(**kwargs)  # ⚠️ Not using context
 ```
 
@@ -1837,7 +1934,7 @@ class Config(AutoWryModel):
 
 @click.command()
 @Config.generate_click_parameters()
-def main(**kwargs):
+def main(**kwargs: Any):
     config = Config(**kwargs)
     print(f"Connecting to {config.host}:{config.port}")
 
@@ -1881,7 +1978,7 @@ class Config(AutoWryModel):
 @click.command()
 @Config.generate_click_parameters()
 @click.pass_context  # ⚠️ Required for source tracking
-def main(ctx, **kwargs):  # ⚠️ ctx parameter required
+def main(ctx: click.Context, **kwargs: Any):  # ⚠️ ctx parameter required
     """Process files with configuration."""
     config = Config.from_click_context(ctx, **kwargs)
 
@@ -1943,7 +2040,7 @@ class DatabaseConfig(WryModel):
 @click.command()
 @multi_model(ServerConfig, DatabaseConfig)
 @click.pass_context
-def serve(ctx, **kwargs):
+def serve(ctx: click.Context, **kwargs: Any):
     """Start server with database connection."""
     # Create both models from kwargs
     configs = create_models(ctx, kwargs, ServerConfig, DatabaseConfig)
@@ -2040,7 +2137,7 @@ Config = create_auto_model(
 # Use like any AutoWryModel
 @click.command()
 @Config.generate_click_parameters()
-def main(**kwargs):
+def main(**kwargs: Any):
     config = Config(**kwargs)
     print(f"{config.host}:{config.port}")
 ```

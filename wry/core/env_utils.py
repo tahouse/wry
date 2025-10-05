@@ -23,8 +23,10 @@ def get_env_var_names(model_class: type[T]) -> dict[str, str]:
     prefix = getattr(model_class, "env_prefix", "")
     env_vars = {}
 
-    for field_name in model_class.model_fields:
-        env_name = f"{prefix}{field_name.upper()}"
+    for field_name, field_info in model_class.model_fields.items():
+        # Use alias if available, otherwise use field name
+        name_for_env = field_info.alias if field_info.alias else field_name
+        env_name = f"{prefix}{name_for_env.upper()}"
         env_vars[field_name] = env_name
 
     return env_vars
@@ -46,8 +48,23 @@ def print_env_vars(model_class: type[T]) -> None:
         field_info = model_class.model_fields[field_name]
         field_type = type_hints.get(field_name, Any)
 
-        # Format type for display
+        # Extract base type from Annotated types
+        from typing import Annotated, get_args, get_origin
+
+        # Handle Annotated[Type, ...] - extract the actual type
+        origin = get_origin(field_type)
+        if origin is not None and str(origin) == str(Annotated):
+            args = get_args(field_type)
+            if args:
+                # First arg is the actual type (might be a Union)
+                field_type = args[0]
+
+        # Format type for display (preserve Union types like str | None)
         type_str = getattr(field_type, "__name__", str(field_type))
+
+        # Clean up type string representation for display
+        if "typing." in type_str:
+            type_str = type_str.replace("typing.", "")
 
         # Check if field is required
         required = field_info.default is PydanticUndefined and field_info.default_factory is None
