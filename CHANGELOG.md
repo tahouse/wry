@@ -7,6 +7,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2025-10-07
+
+### Fixed
+
+- **AutoWryModel inheritance bug** 🐛
+  - Fixed critical bug where child classes inheriting from `AutoWryModel` were not processing their own fields
+  - Previously used `hasattr()` which checked the entire inheritance chain, causing child class fields to be skipped
+  - Now uses `"_autowrymodel_processed" in cls.__dict__` to check only the current class
+  - All inherited fields now correctly become CLI options in child classes
+  - Multiple levels of inheritance now work correctly
+  - Note: `WryModel` was not affected by this bug and has always supported inheritance correctly
+
+### Added
+
+- **Comprehensive inheritance test suite** (24 new tests in `tests/features/test_inheritance.py`)
+  - Tests for `AutoWryModel` inheritance (10 tests - verify the bug fix)
+  - Tests for `WryModel` inheritance (6 tests - verify continued functionality)
+  - Tests for multi-model inheritance (5 tests - mix of both types)
+  - Edge case tests (3 tests - various scenarios)
+  - Coverage includes: basic inheritance, multiple levels, CLI generation, source tracking, constraints, env_prefix, mixed model types, and more
+
+### Documentation
+
+- **New inheritance section in README.md**
+  - Basic inheritance examples
+  - Multiple levels of inheritance
+  - Inheritance with multi-model
+  - Mixing `WryModel` and `AutoWryModel`
+  - Use cases and best practices
+
+- **New Pattern 8 in AI_KNOWLEDGE_BASE.md**
+  - Comprehensive inheritance patterns and examples
+  - Technical details about the bug fix
+  - Use cases: environment-specific configs, feature flags, shared authentication
+  - Updated test statistics (407 → 431+ tests)
+
+### Technical Details
+
+- Bug was in `AutoWryModel.__init_subclass__()` at line 46 of `wry/auto_model.py`
+- Changed from checking inherited attributes to checking class-specific attributes
+- This enables proper field processing for each class in an inheritance hierarchy
+- All existing tests continue to pass (no breaking changes)
+
 ## [0.4.0] - 2025-10-04
 
 ### Added

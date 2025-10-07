@@ -1234,21 +1234,208 @@ class Config(AutoWryModel):
 
 See `examples/autowrymodel_comprehensive.py` and `examples/wrymodel_comprehensive.py` for complete examples.
 
+### Pattern 8: Model Inheritance (v0.3.3+)
+
+**New in v0.3.3**: Full support for inheriting from `WryModel` and `AutoWryModel` classes!
+
+#### Basic Inheritance
+
+```python
+from wry import AutoWryModel
+from pydantic import Field
+
+class BaseConfig(AutoWryModel):
+    """Common configuration shared across all environments."""
+    env_prefix = "APP_"
+    debug: bool = Field(default=False, description="Enable debug mode")
+    log_level: str = Field(default="INFO", description="Logging level")
+
+class ProductionConfig(BaseConfig):
+    """Production-specific configuration."""
+    workers: int = Field(default=4, ge=1, le=32, description="Number of workers")
+    timeout: int = Field(default=30, ge=1, description="Request timeout")
+
+# ProductionConfig has ALL fields: debug, log_level, workers, timeout
+@click.command()
+@ProductionConfig.generate_click_parameters()
+@click.pass_context
+def serve(ctx: click.Context, **kwargs: Any):
+    config = ProductionConfig.from_click_context(ctx, **kwargs)
+    print(f"Workers: {config.workers}, Debug: {config.debug}")
+    print(f"Log level: {config.log_level}")
+```
+
+**CLI Output:**
+
+```bash
+$ python app.py --help
+Options:
+  --debug / --no-debug  Enable debug mode  [default: False]
+  --log-level TEXT      Logging level  [default: INFO]
+  --workers INTEGER     Number of workers  [default: 4]
+  --timeout INTEGER     Request timeout  [default: 30]
+```
+
+#### Multiple Inheritance Levels
+
+```python
+class Level1(AutoWryModel):
+    field1: str = Field(default="v1", description="Level 1")
+
+class Level2(Level1):
+    field2: str = Field(default="v2", description="Level 2")
+
+class Level3(Level2):
+    field3: str = Field(default="v3", description="Level 3")
+
+# Level3 has: field1, field2, field3
+config = Level3()
+assert config.field1 == "v1"
+assert config.field2 == "v2"
+assert config.field3 == "v3"
+```
+
+#### Inheritance with Multi-Model
+
+```python
+from wry import multi_model, create_models
+
+class BaseServer(AutoWryModel):
+    host: str = Field(default="localhost", description="Host")
+
+class ProductionServer(BaseServer):
+    port: int = Field(default=8080, description="Port")
+    ssl_enabled: bool = Field(default=True, description="Enable SSL")
+
+class BaseDatabase(AutoWryModel):
+    db_url: str = Field(default="sqlite:///app.db", description="Database URL")
+
+class ProductionDatabase(BaseDatabase):
+    pool_size: int = Field(default=10, description="Connection pool size")
+    timeout: int = Field(default=30, description="Query timeout")
+
+@click.command()
+@multi_model(ProductionServer, ProductionDatabase)
+@click.pass_context
+def deploy(ctx: click.Context, **kwargs: Any):
+    configs = create_models(ctx, kwargs, ProductionServer, ProductionDatabase)
+    server = configs[ProductionServer]
+    db = configs[ProductionDatabase]
+
+    # All inherited fields available
+    print(f"Server: {server.host}:{server.port} (SSL: {server.ssl_enabled})")
+    print(f"Database: {db.db_url} (pool={db.pool_size}, timeout={db.timeout})")
+```
+
+#### WryModel Inheritance
+
+```python
+from wry import WryModel, AutoOption
+from typing import Annotated
+
+class BaseConfig(WryModel):
+    base_field: Annotated[str, AutoOption] = Field(default="base")
+
+class ChildConfig(BaseConfig):
+    child_field: Annotated[str, AutoOption] = Field(default="child")
+
+# Both fields available with explicit annotations
+```
+
+#### Mixing WryModel and AutoWryModel
+
+```python
+class BaseWry(WryModel):
+    # Explicit annotation required
+    explicit_field: Annotated[str, AutoOption] = Field(default="explicit")
+
+class ChildAuto(BaseWry, AutoWryModel):
+    # This automatically becomes an option (AutoWryModel processing)
+    auto_field: str = Field(default="auto")
+
+# Both fields work in CLI
+```
+
+#### Use Cases for Inheritance
+
+1. **Environment-Specific Configs:**
+
+   ```python
+   class BaseConfig(AutoWryModel):
+       app_name: str
+       debug: bool = False
+
+   class DevConfig(BaseConfig):
+       hot_reload: bool = True
+
+   class ProdConfig(BaseConfig):
+       workers: int = 4
+       ssl_cert: str
+   ```
+
+2. **Feature Flags:**
+
+   ```python
+   class CoreFeatures(AutoWryModel):
+       feature_a: bool = True
+       feature_b: bool = True
+
+   class BetaFeatures(CoreFeatures):
+       experimental_feature: bool = False
+   ```
+
+3. **Shared Authentication:**
+
+   ```python
+   class BaseAuthConfig(AutoWryModel):
+       api_key: str
+       timeout: int = 30
+
+   class ServiceAConfig(BaseAuthConfig):
+       service_a_endpoint: str
+
+   class ServiceBConfig(BaseAuthConfig):
+       service_b_endpoint: str
+   ```
+
+**Key Features:**
+
+- ✅ All inherited fields automatically become CLI options
+- ✅ Source tracking works correctly for inherited fields
+- ✅ `env_prefix` can be inherited or overridden in child classes
+- ✅ Field constraints and validation are inherited
+- ✅ Works with all wry features: arguments, options, exclusions, aliases
+- ✅ Multiple inheritance supported
+- ✅ Deep inheritance chains work correctly
+
+**Technical Details:**
+
+The inheritance bug was fixed in v0.3.3. Previously, `__init_subclass__` used `hasattr()` which checked the entire inheritance chain, causing child class fields to be skipped. Now it uses `"_autowrymodel_processed" in cls.__dict__` to check only the current class.
+
+**Tests:** See `tests/features/test_inheritance.py` for 24 comprehensive tests covering all inheritance scenarios.
+
 ---
 
 ## Test Coverage Details
 
 ### Test Statistics
 
-- **Total Tests**: 407 (all passing)
-- **Total Coverage**: 92%
+- **Total Tests**: 431+ (all passing, includes 24 inheritance tests added in v0.3.3)
+- **Total Coverage**: 92%+
 - **Core Modules**: 100% coverage (sources, accessors, env_utils, multi_model)
-- **Test Files**: 50+ test files
-- **Lines of Test Code**: ~3000 lines
+- **Test Files**: 51+ test files (including test_inheritance.py)
+- **Lines of Test Code**: ~3600+ lines
 
 ### Critical Test Files
 
 **`tests/features/test_source_precedence.py`** ⭐ MOST IMPORTANT
+
+**`tests/features/test_inheritance.py`** ⭐ NEW IN v0.3.3
+
+- 24 comprehensive inheritance tests
+- Covers AutoWryModel, WryModel, and multi-model inheritance
+- Tests multiple inheritance levels, source tracking, mixed model types
+- Validates the inheritance bug fix
 
 ```python
 class TestSourcePrecedence:

@@ -42,8 +42,9 @@ class AutoWryModel(WryModel):
         """Automatically add AutoOption to all unannotated fields."""
         super().__init_subclass__(**kwargs)
 
-        # Skip if we've already processed this class
-        if hasattr(cls, "_autowrymodel_processed"):
+        # Skip if we've already processed this specific class (not parent classes)
+        # Use __dict__ to check only this class, not inherited attributes
+        if "_autowrymodel_processed" in cls.__dict__:
             return
 
         # Mark this class as processed

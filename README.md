@@ -57,6 +57,7 @@ if __name__ == "__main__":
 ```
 
 **See comprehensive examples:**
+
 - `examples/autowrymodel_comprehensive.py` - All AutoWryModel features including aliases
 - `examples/wrymodel_comprehensive.py` - WryModel with source tracking
 - `examples/multimodel_comprehensive.py` - Multi-model usage
@@ -418,8 +419,118 @@ class Config(AutoWryModel):
 See `examples/autowrymodel_comprehensive.py` for examples of explicit Click decorators.
 
 **See also:**
+
 - `examples/autowrymodel_comprehensive.py` - Complete AutoWryModel example with aliases
 - `examples/wrymodel_comprehensive.py` - WryModel with aliases and source tracking
+
+### Model Inheritance
+
+**New in v0.3.3+**: Both `WryModel` and `AutoWryModel` fully support inheritance! Create base configuration classes and extend them with additional fields.
+
+#### Basic Inheritance
+
+```python
+from wry import AutoWryModel
+from pydantic import Field
+
+class BaseConfig(AutoWryModel):
+    """Common configuration shared across environments."""
+    env_prefix = "APP_"
+    debug: bool = Field(default=False, description="Enable debug mode")
+    log_level: str = Field(default="INFO", description="Logging level")
+
+class ProductionConfig(BaseConfig):
+    """Production-specific configuration."""
+    workers: int = Field(default=4, ge=1, le=32, description="Number of workers")
+    timeout: int = Field(default=30, ge=1, description="Request timeout")
+
+# ProductionConfig has all fields: debug, log_level, workers, timeout
+@click.command()
+@ProductionConfig.generate_click_parameters()
+@click.pass_context
+def serve(ctx: click.Context, **kwargs: Any):
+    config = ProductionConfig.from_click_context(ctx, **kwargs)
+    click.echo(f"Starting with {config.workers} workers, debug={config.debug}")
+```
+
+#### Multiple Levels of Inheritance
+
+```python
+class Level1Config(AutoWryModel):
+    field1: str = Field(default="v1", description="Level 1 field")
+
+class Level2Config(Level1Config):
+    field2: str = Field(default="v2", description="Level 2 field")
+
+class Level3Config(Level2Config):
+    field3: str = Field(default="v3", description="Level 3 field")
+
+# Level3Config has all fields: field1, field2, field3
+```
+
+#### Inheritance with Multi-Model
+
+```python
+from wry import multi_model, create_models
+
+class BaseServer(AutoWryModel):
+    host: str = Field(default="localhost", description="Server host")
+
+class ExtendedServer(BaseServer):
+    port: int = Field(default=8080, description="Server port")
+
+class BaseDatabase(AutoWryModel):
+    db_url: str = Field(default="sqlite:///app.db", description="Database URL")
+
+class ExtendedDatabase(BaseDatabase):
+    pool_size: int = Field(default=5, description="Connection pool size")
+
+@click.command()
+@multi_model(ExtendedServer, ExtendedDatabase)
+@click.pass_context
+def main(ctx: click.Context, **kwargs: Any):
+    configs = create_models(ctx, kwargs, ExtendedServer, ExtendedDatabase)
+    server = configs[ExtendedServer]
+    db = configs[ExtendedDatabase]
+
+    # Both base and extended fields are available
+    click.echo(f"Server: {server.host}:{server.port}")
+    click.echo(f"Database: {db.db_url} (pool={db.pool_size})")
+```
+
+#### Mixing WryModel and AutoWryModel
+
+```python
+from typing import Annotated
+from wry import WryModel, AutoWryModel, AutoOption
+
+# Start with explicit WryModel
+class BaseConfig(WryModel):
+    base_field: Annotated[str, AutoOption] = Field(default="base")
+
+# Extend with AutoWryModel for automatic options
+class ChildConfig(BaseConfig, AutoWryModel):
+    # This automatically becomes an option
+    child_field: str = Field(default="child")
+```
+
+#### Benefits of Inheritance
+
+1. **DRY Principle**: Define common fields once
+2. **Environment-Specific Configs**: Base config + dev/staging/prod extensions
+3. **Feature Flags**: Base config + feature-specific configurations
+4. **Reusable Components**: Create libraries of configuration classes
+5. **Full Source Tracking**: Inherited fields track their sources correctly
+
+**Important Notes:**
+
+- All inherited fields automatically become CLI options (for `AutoWryModel`)
+- Source tracking works correctly for inherited fields
+- `env_prefix` can be inherited or overridden
+- Field constraints and validation are inherited
+- Works with all wry features: arguments, options, exclusions, aliases
+
+See `tests/features/test_inheritance.py` for comprehensive examples.
 
 ## Development
 
