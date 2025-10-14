@@ -1,8 +1,15 @@
 # wry - Comprehensive AI/LLM Knowledge Base
 
-**Last Updated**: 2025-10-04
-**Version**: 0.3.2+
+**Last Updated**: 2025-10-14
+**Version**: 0.5.0+
 **Purpose**: Complete reference for AI assistants and LLMs to understand wry without reading the entire codebase
+
+**Related Documentation**:
+- 📖 **`CONTRIBUTING.md`** - Comprehensive contributor guide (referenced by `.cursorrules`)
+- 🤖 **`.cursorrules`** - AI assistant quick reference (references this file and CONTRIBUTING.md)
+- 📘 **`README.md`** - User-facing documentation
+- 📝 **`CHANGELOG.md`** - Version history and changes
+- 🚀 **`RELEASE_PROCESS.md`** - Release workflow (how to convert [Unreleased] → [X.Y.Z])
 
 ---
 
@@ -19,7 +26,9 @@
 
 **Key Innovation**: Single source of truth for configuration with comprehensive source tracking.
 
-**Stats**: 436 tests (all passing), 92%+ coverage, supports Python 3.10-3.12, Pydantic v2.11+ compatible
+**Stats**: 494 tests (all passing), 92%+ coverage, supports Python 3.10-3.12, Pydantic v2.11+ compatible
+
+**For Contributors**: See `CONTRIBUTING.md` for development guidelines and `.cursorrules` for AI assistant rules
 
 ---
 
@@ -2814,19 +2823,29 @@ Single source of truth: Pydantic model defines everything.
 - ✅ Multi-source configuration (CLI/ENV/JSON/DEFAULT)
 - ✅ Source tracking (know where every value came from)
 - ✅ Type safety (Pydantic + Click)
-- ✅ Comprehensive testing (407 tests, 92% coverage)
-- ✅ Excellent documentation (README + AI KB + examples)
+- ✅ Comprehensive testing (494 tests, 92% coverage)
+- ✅ Excellent documentation (README + AI KB + examples + CONTRIBUTING)
 
 **For AI assistants**:
 
-- Start with `examples/source_tracking_comprehensive.py` to understand the system
-- Reference this knowledge base for details
-- Check version for bug fixes (v0.2.2 critical)
+- **Follow** `.cursorrules` for quick development rules
+- **Reference** this knowledge base (AI_KNOWLEDGE_BASE.md) for technical details
+- **Check** `CONTRIBUTING.md` for complete development guidelines
+- Start with comprehensive examples to understand the system
+- Check version for bug fixes (v0.2.2 critical, v0.5.0 adds list support)
 - Point users to examples for patterns
 - Use `show_help_index()` to help users find documentation
 
+**For Contributors**:
+
+- **Read** `CONTRIBUTING.md` for complete guidelines
+- **Follow** `.cursorrules` if using Cursor AI
+- **Reference** this knowledge base for architecture details
+- **Check** `CHANGELOG.md` for version history
+- **See** `RELEASE_PROCESS.md` for creating releases
+
 ---
 
-**End of Knowledge Base** - Version 0.2.3+ - Last Updated: 2025-10-01
+**End of Knowledge Base** - Version 0.5.0+ - Last Updated: 2025-10-14
 
 **Access this**: `python -m wry.help_system ai` or `from wry import print_help; print_help('ai')`

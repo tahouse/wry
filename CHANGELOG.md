@@ -15,6 +15,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `.cursorrules` references `CONTRIBUTING.md` for detailed explanations
   - Both tailored specifically for wry development patterns
 
+### Changed
+
+- **Documentation cross-references** 🔗
+  - README.md: Added Contributing section with links to CONTRIBUTING.md, .cursorrules, AI_KNOWLEDGE_BASE.md
+  - AI_KNOWLEDGE_BASE.md: Updated header with related documentation links
+  - AI_KNOWLEDGE_BASE.md: Updated version to 0.5.0+ and test count to 494
+  - AI_KNOWLEDGE_BASE.md: Added separate guidance sections for AI assistants and contributors
+  - Creates clear documentation hierarchy and navigation
+
+- **CHANGELOG requirements strengthened** ⚠️
+  - .cursorrules: Made CHANGELOG.md update mandatory and explicit (first item)
+  - CONTRIBUTING.md: Added prominent warning that CHANGELOG.md updates are required for every commit
+  - CONTRIBUTING.md: Listed all CHANGELOG sections (Added/Changed/Fixed/Deprecated/Removed/Security)
+  - RELEASE_PROCESS.md: Clarified [Unreleased] → versioned section workflow
+  - RELEASE_PROCESS.md: Documented that commits add to [Unreleased] during development
+  - RELEASE_PROCESS.md: Explained that release commit converts [Unreleased] to [X.Y.Z]
+
 ### Tests
 
 - **Additional comma-separated test** (494 total tests)

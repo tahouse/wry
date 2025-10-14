@@ -848,7 +848,14 @@ The wry codebase is organized into focused modules:
 
 ## Contributing
 
-We welcome contributions! Please follow these guidelines to ensure a smooth process.
+We welcome contributions! Please see **`CONTRIBUTING.md`** for comprehensive guidelines.
+
+**Quick links**:
+
+- 📖 **`CONTRIBUTING.md`** - Complete contributor guide (for humans)
+- 🤖 **`.cursorrules`** - AI assistant quick reference
+- 📚 **`AI_KNOWLEDGE_BASE.md`** - Complete technical reference
+- 🚀 **`RELEASE_PROCESS.md`** - Release workflow and versioning
 
 ### Development Setup
 

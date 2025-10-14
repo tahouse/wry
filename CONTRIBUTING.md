@@ -434,9 +434,17 @@ def test_feature_with_clear_name():
 
 ### 1. Documentation Updates
 
+**⚠️ ALWAYS UPDATE CHANGELOG.md - This is required for every commit!**
+
+- [ ] **CHANGELOG.md**: **ALWAYS** add entry under `[Unreleased]` with appropriate section:
+  - `Added` - New features, new files, new capabilities
+  - `Changed` - Changes to existing functionality, documentation updates
+  - `Fixed` - Bug fixes
+  - `Deprecated` - Features that will be removed
+  - `Removed` - Removed features
+  - `Security` - Security fixes
 - [ ] **README.md**: Update if user-facing features, usage, or API changed
 - [ ] **AI_KNOWLEDGE_BASE.md**: Update if architecture, implementation details, or patterns changed
-- [ ] **CHANGELOG.md**: Add entry under `[Unreleased]` with section (Added/Changed/Fixed/Deprecated/Removed)
 - [ ] **Module docstrings**: Update docstrings in modified modules
 - [ ] **Examples**: Add or update examples if demonstrating new features
 
@@ -624,10 +632,21 @@ If pre-commit hooks are failing:
 ❌ Make breaking changes without major version bump
 ❌ Ignore linter/type checker errors
 
+## Release Process
+
+For information about creating releases, see **`RELEASE_PROCESS.md`**.
+
+**Key points**:
+- During development: Add all changes to `[Unreleased]` in CHANGELOG.md
+- When releasing: Convert `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD`
+- Tag the release commit: `git tag -s vX.Y.Z`
+- See RELEASE_PROCESS.md for complete step-by-step instructions
+
 ## Questions?
 
 - Check `examples/` for usage patterns
 - Check `AI_KNOWLEDGE_BASE.md` for complete technical reference
 - Check `README.md` for user documentation
+- Check `RELEASE_PROCESS.md` for release workflow
 - Check `tests/features/test_source_precedence.py` for source tracking examples
 - Open an issue for questions or clarifications

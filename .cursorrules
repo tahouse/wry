@@ -7,10 +7,10 @@
 
 Before making any commit, AI assistants MUST:
 
-1. **Update Documentation**:
+1. **Update Documentation** (ALWAYS update CHANGELOG.md):
+   - **CHANGELOG.md**: ALWAYS add entry under [Unreleased] for ANY change
    - README.md if user-facing changes
    - AI_KNOWLEDGE_BASE.md if architecture/API changes
-   - CHANGELOG.md with entry under [Unreleased]
    - Module docstrings if relevant
 
 2. **Ensure Code Quality**:
@@ -49,6 +49,7 @@ Before making any commit, AI assistants MUST:
 - Code patterns: `CONTRIBUTING.md` "Configuration Models" section
 - Testing guide: `CONTRIBUTING.md` "Testing" section
 - Pre-commit checklist: `CONTRIBUTING.md` "Pre-Commit Checklist" section
+- Release workflow: `RELEASE_PROCESS.md` for creating releases
 
 ## Enforcement
 

@@ -2,31 +2,60 @@
 
 This document outlines the correct process for creating a new release.
 
-## Release Checklist
+## Development Workflow
 
-Follow these steps IN ORDER for each release:
+### During Development (Between Releases)
 
-1. **Make all code changes**
-   - Implement features/fixes
-   - Ensure all tests pass (`./check.sh`)
+As you make commits, **ALWAYS update CHANGELOG.md** under `[Unreleased]`:
+
+```markdown
+## [Unreleased]
+
+### Added
+- New feature X
+
+### Fixed
+- Bug Y
+```
+
+**Every commit** should add its changes to the `[Unreleased]` section. This keeps the changelog up-to-date continuously.
+
+### When Ready to Release
+
+Follow these steps IN ORDER:
+
+1. **Verify all changes are in [Unreleased]**
+   - Check that CHANGELOG.md `[Unreleased]` section has all changes since last release
+   - Ensure all tests pass (`pytest`)
    - Fix any linting issues
 
-2. **Update documentation**
+2. **Update CHANGELOG.md for release**
+   - Change `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`
+   - Add a new empty `## [Unreleased]` section above it
+   - Update comparison links at bottom if present
+
+   **Example**:
+   ```markdown
+   ## [Unreleased]
+
+   ## [0.5.0] - 2025-10-14
+
+   ### Added
+   - Feature from unreleased section (now part of 0.5.0)
+   ```
+
+3. **Update documentation**
    - Update README.md if needed
+   - Update AI_KNOWLEDGE_BASE.md version numbers
    - Update any affected documentation
 
-3. **Update CHANGELOG.md**
-   - Add a new version section under `## [Unreleased]`
-   - Document all changes following [Keep a Changelog](https://keepachangelog.com/) format
-   - Update the comparison links at the bottom of the file
-
-4. **Commit all changes**
+4. **Commit the release preparation**
    ```bash
    git add -A
    git commit -m "chore: prepare for vX.Y.Z release"
    ```
 
-5. **Create signed tag**
+5. **Create signed tag on the release commit**
    ```bash
    git tag -s vX.Y.Z -m "Release vX.Y.Z: brief description"
    ```
@@ -36,6 +65,10 @@ Follow these steps IN ORDER for each release:
    git push origin main
    git push origin vX.Y.Z
    ```
+
+### After the Release
+
+Continue development by adding changes to the (now empty) `[Unreleased]` section.
 
 ## Example
 
