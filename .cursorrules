@@ -1,0 +1,192 @@
+# Cursor AI Rules for wry Repository
+
+> **Note**: These rules are the AI assistant's quick reference. For comprehensive guidelines,
+> examples, and detailed explanations, see `CONTRIBUTING.md`.
+
+## Pre-Commit Requirements
+
+Before making any commit, AI assistants MUST:
+
+1. **Update Documentation**:
+   - README.md if user-facing changes
+   - AI_KNOWLEDGE_BASE.md if architecture/API changes
+   - CHANGELOG.md with entry under [Unreleased]
+   - Module docstrings if relevant
+
+2. **Ensure Code Quality**:
+   - Add type annotations to all new functions
+   - Add docstrings to all public functions/classes
+   - Follow DRY principles
+   - Remove dead code and unused imports
+
+3. **Update/Add Tests**:
+   - Add tests for new functionality
+   - Update tests for changed behavior
+   - Ensure tests pass (run pytest)
+
+4. **Run Checks**:
+   - Ensure pre-commit hooks will pass
+   - Fix linter errors (ruff, mypy)
+   - Format code properly (ruff format)
+
+5. **Follow Conventional Commits**:
+   - Use format: `type: description`
+   - Types: feat, fix, docs, refactor, test, chore, build
+
+## Reference
+
+**Full development guidelines**: See `CONTRIBUTING.md` for:
+
+- Complete code organization principles
+- Detailed examples of adding features
+- wry-specific development patterns
+- Comprehensive pre-commit checklist
+- Pull request process
+
+**Quick links**:
+
+- Architecture & concepts: `CONTRIBUTING.md` "Core Concepts" section
+- Code patterns: `CONTRIBUTING.md` "Configuration Models" section
+- Testing guide: `CONTRIBUTING.md` "Testing" section
+- Pre-commit checklist: `CONTRIBUTING.md` "Pre-Commit Checklist" section
+
+## Enforcement
+
+The pre-commit hook automatically runs checks on commit.
+All checks must pass before commit succeeds.
+
+## General Development Guidelines
+
+### Date and Time
+
+- Use the `date` terminal command to learn the current date
+- Never assume or hardcode dates in dynamic contexts
+
+### Python Best Practices
+
+#### Type Annotations
+
+- **ALWAYS** add type annotations to all functions, methods, and class attributes
+- Include return types for all functions (use `-> None` for void functions)
+- Use proper generic types from `typing` module
+- Prefer modern Python 3.10+ syntax (e.g., `list[str]` over `List[str]`)
+
+#### Documentation
+
+- Add comprehensive docstrings to:
+  - All modules (at the top of the file)
+  - All classes (describing purpose, attributes, and usage)
+  - All public functions and methods (describing parameters, return values, and exceptions)
+- Use consistent docstring format (Google style preferred)
+
+#### Code Quality
+
+- **DRY Principles**: Don't Repeat Yourself - extract common logic into reusable functions/classes
+- **Clean Code**: Write self-documenting code with clear variable and function names
+- **No Dead Code**: Remove unused variables, functions, and commented-out code unless it serves as important documentation
+- **Maintainability**: Prioritize code that is easy to understand, modify, and extend
+
+### Linter and Type Checker Compliance
+
+#### Fixing Issues Properly
+
+- **ALWAYS** fix linter errors and type checker warnings properly
+- **AVOID** using ignore directives like `# type: ignore`, `# noqa` as quick fixes
+- **AVOID** using `cast()` unless absolutely critical for complex type scenarios
+- Investigate the root cause and fix issues with proper type annotations and code structure
+- If an ignore directive is truly necessary, add a detailed comment explaining why
+
+#### Working Directory
+
+- **ALWAYS** ensure you're in the correct directory before:
+  - Running commands
+  - Creating files
+  - Executing scripts
+  - Making git operations
+
+### Testing
+
+#### Test Coverage
+
+- **NEVER** ignore, skip, or disable test cases just to make test suites pass
+- If a test fails, fix the underlying issue or update the test if requirements changed
+- Add tests for all new functionality
+- Update tests when changing existing behavior
+- Ensure all tests **PASS** before considering work complete
+
+#### Test Organization
+
+- Place test code in the most logical location (follow project structure under `tests/`)
+- Name test files and functions clearly to indicate what they're testing
+- Use descriptive test names: `test_<function>_<scenario>_<expected_result>`
+
+### Documentation Management
+
+#### Markdown Files
+
+- **Do not create excessive markdown files** unless explicitly instructed
+- If markdown files exist, add content to the appropriate existing file
+- If unsure which file is appropriate, **ask the user** where content should go
+- Before creating a new markdown file, consider: Did the user actually request documentation?
+
+### Git Best Practices
+
+#### Committing Changes
+
+- Attempt to commit changes after completing major features or fixes
+- Use **Conventional Commits** format: `<type>: <description>`
+  - Examples: `feat: add comma-separated list support`, `fix: handle ClassVar in AutoWryModel`
+
+#### Pre-Commit Hooks - CRITICAL RULE
+
+- **NEVER** use `git commit --no-verify` or `--no-gpg-sign` to bypass pre-commit hooks
+- **ONLY EXCEPTION**: When the user explicitly says it's okay
+- If pre-commit hooks fail:
+  1. Fix the underlying issue (don't bypass)
+  2. Ask the user for guidance if you can't fix it
+  3. Wait for user approval before using --no-verify
+- Pre-commit hooks catch bugs, enforce quality, and save code review time
+- Bypassing them should be extremely rare (emergency situations only with approval)
+
+#### File Operations
+
+- **Strongly prefer** using Git commands for file operations:
+  - Use `git rm` instead of `rm` when deleting tracked files
+  - Use `git mv` instead of `mv` when moving/renaming tracked files
+- This ensures Git properly tracks file history instead of treating operations as delete+add
+- Always pass `--yes` or appropriate non-interactive flags to avoid user prompts
+- **NEVER** use `git push --force` to main/master without explicit user approval
+- **NEVER** use `git reset --hard` without explicit user approval
+
+## wry-Specific Guidelines
+
+### Model Development
+
+- All `WryModel` and `AutoWryModel` classes should use `ClassVar` for class-level configuration
+- Source tracking is a core feature - ensure it works for new features
+- List fields automatically get `multiple=True` unless `comma_separated_lists` is enabled
+- Document behavior in both README.md and AI_KNOWLEDGE_BASE.md
+
+### Click Integration
+
+- All Click parameter generation should respect Pydantic field metadata
+- Help text should be clear and include constraints
+- Arguments should inject help into docstrings (Click limitation workaround)
+
+### Testing Requirements
+
+- Test all four configuration sources: CLI, ENV, JSON, DEFAULT
+- Test source tracking for new features
+- Test both standard and edge cases
+- Use `CliRunner` for Click command tests
+
+## Summary
+
+These rules ensure:
+
+- High code quality and maintainability
+- Proper type safety and documentation
+- Comprehensive test coverage
+- Clean git history
+- Consistent development practices
+- wry's core features (source tracking, Click integration) work correctly
