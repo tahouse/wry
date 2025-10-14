@@ -485,7 +485,15 @@ mypy wry/
 
 **Note**: Git commits automatically run pre-commit hooks (ruff, mypy, pytest). All must pass.
 
-### 5. wry-Specific Checks
+### 5. Update TODO.md (if applicable)
+
+- [ ] **TODO.md**: Update if working on tracked tasks
+  - Mark completed tasks as done (✅)
+  - Remove completed items or move to archive
+  - Update progress notes on ongoing work
+  - Add new tasks if discovered during development
+
+### 6. wry-Specific Checks
 
 - [ ] **Source tracking works**: If touching config/model code, verify source tracking
 - [ ] **Precedence correct**: CLI > JSON > ENV > DEFAULT (verify if changing)
@@ -648,5 +656,6 @@ For information about creating releases, see **`RELEASE_PROCESS.md`**.
 - Check `AI_KNOWLEDGE_BASE.md` for complete technical reference
 - Check `README.md` for user documentation
 - Check `RELEASE_PROCESS.md` for release workflow
+- Check `TODO.md` for current tasks and planned features
 - Check `tests/features/test_source_precedence.py` for source tracking examples
 - Open an issue for questions or clarifications

@@ -29,7 +29,12 @@ Before making any commit, AI assistants MUST:
    - Fix linter errors (ruff, mypy)
    - Format code properly (ruff format)
 
-5. **Follow Conventional Commits**:
+5. **Update TODO.md** (if applicable):
+   - Mark completed tasks as done
+   - Remove completed items or move to archive section
+   - Update progress on ongoing work
+
+6. **Follow Conventional Commits**:
    - Use format: `type: description`
    - Types: feat, fix, docs, refactor, test, chore, build
 

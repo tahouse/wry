@@ -26,6 +26,7 @@ Follow these steps IN ORDER:
 
 1. **Verify all changes are in [Unreleased]**
    - Check that CHANGELOG.md `[Unreleased]` section has all changes since last release
+   - Check TODO.md - all planned release items should be completed
    - Ensure all tests pass (`pytest`)
    - Fix any linting issues
 
@@ -68,7 +69,13 @@ Follow these steps IN ORDER:
 
 ### After the Release
 
-Continue development by adding changes to the (now empty) `[Unreleased]` section.
+Continue development by:
+1. Adding new changes to the (now empty) `[Unreleased]` section in CHANGELOG.md
+2. Updating TODO.md:
+   - Archive or remove completed items from the released version
+   - Add new tasks or features planned for next release
+   - Update roadmap and priorities
+3. Update version numbers in AI_KNOWLEDGE_BASE.md if not already done
 
 ## Example
 

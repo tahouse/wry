@@ -32,6 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - RELEASE_PROCESS.md: Documented that commits add to [Unreleased] during development
   - RELEASE_PROCESS.md: Explained that release commit converts [Unreleased] to [X.Y.Z]
 
+- **TODO.md integration** 📋
+  - .cursorrules: Added TODO.md update as step 5 in pre-commit requirements
+  - CONTRIBUTING.md: Added TODO.md checklist item (mark completed, update progress)
+  - RELEASE_PROCESS.md: Check TODO.md before release, update after release
+  - README.md: Added comprehensive "Documentation Index" section
+  - README.md: Listed TODO.md in "For Contributors" section
+  - README.md: Added "Quick Start Navigation" for users/contributors/AI assistants
+
 ### Tests
 
 - **Additional comma-separated test** (494 total tests)
