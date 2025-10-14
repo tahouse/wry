@@ -7,12 +7,14 @@ incorrectly converted to strings when used with generate_click_parameters.
 from typing import Any
 
 import click
+import pytest
 from pydantic import Field
 
 from wry import AutoWryModel, generate_click_parameters
 from wry.core import WryModel
 
 
+@pytest.mark.filterwarnings("ignore:The parameter.*is used more than once:UserWarning")
 class TestMultipleOptionBug:
     """Test cases for the multiple option bug."""
 

@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.1] - 2025-10-14
+
+### Fixed
+
+- **Comma-separated lists with `default_factory`** 🐛
+  - Fixed bug where fields with `default_factory=list` would receive `None` instead of empty list when not provided
+  - Added proper handling in `click_integration.py` to call `default_factory()` for default values
+  - All comma-separated list tests now pass without validation errors
+
 ### Added
 
 - **Development guidelines** 📚
@@ -16,6 +25,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Both tailored specifically for wry development patterns
 
 ### Changed
+
+- **Test quality improvements** ✨
+  - Fixed Pydantic shadow warnings by renaming `source` field to `source_path`/`source_file` in test cases
+  - Added `@pytest.mark.filterwarnings` to suppress intentional warnings in tests
+  - Tests that validate warning behavior no longer pollute test output
+  - All 494 tests pass cleanly with zero warnings
+
+- **Test quality improvements** ✨
+  - Fixed Pydantic shadow warnings by renaming `source` field to `source_path`/`source_file` in test cases
+  - Added `@pytest.mark.filterwarnings` to suppress intentional warnings in tests
+  - Tests that validate warning behavior no longer pollute test output
+  - All 494 tests pass cleanly with zero warnings
 
 - **Documentation cross-references** 🔗
   - README.md: Added Contributing section with links to CONTRIBUTING.md, .cursorrules, AI_KNOWLEDGE_BASE.md

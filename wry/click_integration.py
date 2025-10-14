@@ -405,6 +405,11 @@ def generate_click_parameters(
             # or Click will think there IS a default and won't enforce the requirement
             if field_info.default is not PydanticUndefined:
                 click_kwargs["default"] = field_info.default
+            elif field_info.default_factory is not None:
+                # Field has default_factory (e.g., default_factory=list)
+                # Call it to get the default value for Click
+                factory = cast(Callable[[], Any], field_info.default_factory)
+                click_kwargs["default"] = factory()
             elif not is_required:
                 # Optional field without explicit default gets None
                 click_kwargs["default"] = None

@@ -483,6 +483,8 @@ class TestInheritanceEdgeCases:
         assert len(ChildConfig.model_fields) == 2
 
 
+@pytest.mark.filterwarnings("ignore:Function.*already decorated:UserWarning")
+@pytest.mark.filterwarnings("ignore:The parameter.*is used more than once:UserWarning")
 class TestMultiModelInheritance:
     """Test inheritance scenarios with multi-model commands."""
 

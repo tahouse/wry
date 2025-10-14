@@ -16,7 +16,7 @@ class TestArgumentHelpInjection:
         """Test that AutoWryModel injects argument help into docstring."""
 
         class Config(AutoWryModel):
-            source: Annotated[str, AutoClickParameter.ARGUMENT] = Field(description="Source file path")
+            source_path: Annotated[str, AutoClickParameter.ARGUMENT] = Field(description="Source file path")
             dest: Annotated[str, AutoClickParameter.ARGUMENT] = Field(description="Destination file path")
             verbose: bool = False
 
@@ -25,14 +25,14 @@ class TestArgumentHelpInjection:
         def copy(**kwargs: Any):
             """Copy files from source to destination."""
             config = Config(**kwargs)
-            click.echo(f"{config.source} -> {config.dest}")
+            click.echo(f"{config.source_path} -> {config.dest}")
 
         runner = CliRunner()
         result = runner.invoke(copy, ["--help"])
 
         assert result.exit_code == 0
         assert "Arguments:" in result.output
-        assert "SOURCE" in result.output
+        assert "SOURCE_PATH" in result.output
         assert "Source file path" in result.output
         assert "DEST" in result.output
         assert "Destination file path" in result.output
@@ -116,7 +116,7 @@ class TestArgumentHelpInjection:
 
         class Config(AutoWryModel):
             # Argument with description
-            source: Annotated[str, AutoClickParameter.ARGUMENT] = Field(description="Source path")
+            source_path: Annotated[str, AutoClickParameter.ARGUMENT] = Field(description="Source path")
             # Argument without description - should not appear in docstring
             dest: Annotated[str, AutoClickParameter.ARGUMENT] = Field(default="out.txt")
 
@@ -125,14 +125,14 @@ class TestArgumentHelpInjection:
         def copy(**kwargs: Any):
             """Copy file."""
             config = Config(**kwargs)
-            click.echo(f"{config.source} -> {config.dest}")
+            click.echo(f"{config.source_path} -> {config.dest}")
 
         runner = CliRunner()
         result = runner.invoke(copy, ["--help"])
 
         assert result.exit_code == 0
         assert "Arguments:" in result.output
-        assert "SOURCE" in result.output
+        assert "SOURCE_PATH" in result.output
         assert "Source path" in result.output
         # DEST should not appear in Arguments section since it has no description
         # (it will appear in usage line though)

@@ -44,6 +44,7 @@ class CacheArgs(WryModel):
 class TestSplitKwargs:
     """Test the split_kwargs_by_model function."""
 
+    @pytest.mark.filterwarnings("ignore:Unused kwargs:UserWarning")
     def test_split_kwargs_basic(self):
         """Test basic kwarg splitting between models."""
         kwargs = {"host": "example.com", "port": 3306, "debug": True, "workers": 8, "unknown": "ignored"}
@@ -133,6 +134,8 @@ class TestCreateModels:
             create_models(ctx, kwargs, DatabaseArgs)
 
 
+@pytest.mark.filterwarnings("ignore:Function.*already decorated:UserWarning")
+@pytest.mark.filterwarnings("ignore:The parameter.*is used more than once:UserWarning")
 class TestMultiModelDecorator:
     """Test the multi_model decorator."""
 
@@ -279,6 +282,8 @@ class TestSingletonOption:
         # They should be different objects
         assert option1 is not option2
 
+    @pytest.mark.filterwarnings("ignore:Function.*already decorated:UserWarning")
+    @pytest.mark.filterwarnings("ignore:The parameter.*is used more than once:UserWarning")
     def test_singleton_option_in_model(self):
         """Test using singleton option in a model."""
         from wry.multi_model import _SINGLETON_OPTIONS

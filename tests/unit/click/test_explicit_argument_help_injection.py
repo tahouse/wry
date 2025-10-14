@@ -57,7 +57,7 @@ class TestExplicitArgumentHelpInjection:
 
         class Config(WryModel):
             # Auto-generated argument with Field description
-            source: Annotated[str, AutoArgument] = Field(description="Source file")
+            source_file: Annotated[str, AutoArgument] = Field(description="Source file")
             # Explicit click.argument with help
             dest: Annotated[str, click.argument("destination", help="Destination file")] = Field()
 
@@ -70,7 +70,7 @@ class TestExplicitArgumentHelpInjection:
         # Both should be in the docstring
         assert cmd.__doc__ is not None
         assert "Arguments:" in cmd.__doc__
-        assert "SOURCE" in cmd.__doc__
+        assert "SOURCE_FILE" in cmd.__doc__
         assert "Source file" in cmd.__doc__
         assert "DESTINATION" in cmd.__doc__
         assert "Destination file" in cmd.__doc__

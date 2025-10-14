@@ -3,6 +3,7 @@
 from typing import Annotated, Any
 
 import click
+import pytest
 from click.testing import CliRunner
 from pydantic import Field
 
@@ -78,6 +79,8 @@ class TestContextHandling:
         assert result.exit_code == 0
         assert "Name: direct" in result.output
 
+    @pytest.mark.filterwarnings("ignore:Function.*already decorated:UserWarning")
+    @pytest.mark.filterwarnings("ignore:The parameter.*is used more than once:UserWarning")
     def test_multiple_decorators_requires_care(self):
         """Test that multiple decorators need explicit pass_context control."""
 

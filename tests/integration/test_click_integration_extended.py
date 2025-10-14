@@ -457,6 +457,7 @@ class TestAddConfigOption:
 class TestExplicitClickDecorators:
     """Test handling of explicit Click decorators in annotations."""
 
+    @pytest.mark.filterwarnings("ignore:The parameter.*is used more than once:UserWarning")
     def test_explicit_option_decorator(self):
         """Test field with explicit click.option in annotation."""
 
