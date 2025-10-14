@@ -418,6 +418,158 @@ class Config(AutoWryModel):
 
 See `examples/autowrymodel_comprehensive.py` for examples of explicit Click decorators.
 
+### List Type Fields
+
+**Automatic handling**: wry automatically detects `list[T]` and `tuple[T, ...]` type fields and generates Click options with `multiple=True`.
+
+```python
+from wry import AutoWryModel
+
+class ProjectConfig(AutoWryModel):
+    tags: list[str] = Field(
+        default_factory=list,
+        description="Project tags"
+    )
+    ports: list[int] = Field(
+        default_factory=list,
+        description="Ports to expose"
+    )
+```
+
+**IMPORTANT - Usage**: Users must pass the option **multiple times** (not comma-separated):
+
+```bash
+# ✅ CORRECT - Repeat the option for each value:
+python app.py --tags python --tags rust --tags go
+# Result: tags=["python", "rust", "go"]
+
+# ✅ Also correct - Single value:
+python app.py --tags python
+# Result: tags=["python"]
+
+# ✅ Also correct - No values (uses default):
+python app.py
+# Result: tags=[]
+
+# ❌ INCORRECT - Comma-separated does NOT work as expected:
+python app.py --tags python,rust,go
+# Result: tags=["python,rust,go"]  ← Single string with commas!
+```
+
+**Why not comma-separated?**
+
+This is Click's standard behavior with `multiple=True`. To parse comma-separated values, you would need a custom Click type. The current behavior matches standard Unix CLI conventions (similar to `grep -e pattern1 -e pattern2` or `docker run -v vol1 -v vol2`).
+
+**Works with all list types:**
+
+```python
+tags: list[str]         # String lists
+ports: list[int]        # Integer lists (with type validation)
+flags: list[bool]       # Boolean lists
+items: tuple[str, ...]  # Tuples also supported
+```
+
+**JSON and Environment Variables:**
+
+```json
+{
+  "tags": ["python", "rust", "go"],
+  "ports": [8080, 8443]
+}
+```
+
+```python
+# JSON config works naturally with arrays
+python app.py --config config.json
+
+# CLI can override JSON values
+python app.py --config config.json --tags typescript --tags javascript
+```
+
+**Tests**: See `tests/unit/auto_model/test_auto_model_list_fields.py` for comprehensive examples.
+
+#### Comma-Separated Alternative (Opt-in)
+
+If you prefer comma-separated input (like `--tags python,rust,go`) instead of repeating the option, wry provides two approaches:
+
+**Approach 1: Per-Field Annotation (fine-grained control)**
+
+```python
+from typing import Annotated
+from wry import AutoWryModel, CommaSeparated
+
+class Config(AutoWryModel):
+    # Standard behavior: --tags a --tags b --tags c
+    standard_tags: list[str] = Field(default_factory=list)
+
+    # Comma-separated: --csv-tags a,b,c
+    csv_tags: Annotated[list[str], CommaSeparated] = Field(
+        default_factory=list,
+        description="Tags (comma-separated)"
+    )
+```
+
+**Approach 2: Model-Wide Setting (all list fields)**
+
+```python
+from typing import ClassVar
+from wry import AutoWryModel
+
+class Config(AutoWryModel):
+    # Enable comma-separated for ALL list fields in this model
+    comma_separated_lists: ClassVar[bool] = True
+
+    # All these now accept comma-separated input
+    tags: list[str] = Field(default_factory=list)       # --tags a,b,c
+    ports: list[int] = Field(default_factory=list)      # --ports 80,443
+    values: list[float] = Field(default_factory=list)   # --values 1.5,2.7
+```
+
+**Usage**:
+
+```bash
+# Standard list field (multiple invocations)
+python app.py --standard-tags a --standard-tags b --standard-tags c
+
+# Comma-separated field (single invocation)
+python app.py --csv-tags a,b,c
+
+# Works with integers and floats too
+python app.py --ports 8080,8443,9000
+
+# With model-wide setting, all lists accept comma-separated
+python app.py --tags a,b,c --ports 80,443 --values 1.5,2.7
+```
+
+**Which approach to use?**
+
+- **Per-field**: Use when only some lists should be comma-separated, or when mixing both styles
+- **Model-wide**: Use when all lists in a model should consistently accept comma-separated input
+
+**Trade-offs**:
+
+- ✅ **Pros**: More concise, familiar to users of tools like `docker run -p 80,443`
+- ✅ **Pros**: Model-wide setting is less verbose than annotating every field
+- ⚠️ **Cons**: Cannot repeat the option (--csv-tags a,b --csv-tags c won't work)
+- ⚠️ **Cons**: Commas in values require escaping or quoting
+- ⚠️ **Cons**: Less discoverable (users might not realize comma-separated is supported)
+
+**Recommendation**: Use standard `multiple=True` (default) unless your users specifically expect comma-separated input. The model-wide `comma_separated_lists` setting is convenient when building tools with consistent comma-separated conventions (like Docker-style CLIs).
+
+**Implementation Notes**:
+
+- `comma_separated_lists` is a `ClassVar[bool]` (like `env_prefix`)
+- NOT included in Pydantic fields (won't appear in `model_fields` or `model_dump()`)
+- Per-field `CommaSeparated` annotation takes priority over model-wide setting
+- Works with all list types: `list[str]`, `list[int]`, `list[float]`, `tuple[T, ...]`
+- Automatically strips whitespace and filters empty items
+- Validates types and enforces Pydantic constraints
+
+**Tests**: 22 comprehensive tests covering standard and comma-separated behavior
+
+- `tests/unit/auto_model/test_auto_model_list_fields.py` - Standard multiple=True (11 tests)
+- `tests/unit/auto_model/test_comma_separated_lists.py` - Comma-separated support (11 tests)
+
 **See also:**
 
 - `examples/autowrymodel_comprehensive.py` - Complete AutoWryModel example with aliases

@@ -59,8 +59,15 @@ class AutoWryModel(WryModel):
             if attr_name.startswith("_"):
                 continue
 
-            # Check if it's already Annotated
+            # Skip ClassVar annotations (class-level config like env_prefix, comma_separated_lists)
             origin = get_origin(annotation)
+            if origin is not None:
+                # ClassVar check - handle both typing.ClassVar and typing_extensions.ClassVar
+                origin_str = str(origin)
+                if "ClassVar" in origin_str:
+                    continue
+
+            # Check if it's already Annotated
             # Compare using string representation to handle module reload scenarios
             if origin is not None and str(origin) == "<class 'typing.Annotated'>":
                 # Check if it has any Click-related metadata

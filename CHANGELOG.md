@@ -7,6 +7,89 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2025-10-14
+
+### Added
+
+- **Comprehensive list field support** 🎯
+  - `list[str]`, `list[int]`, `list[float]`, `tuple[T, ...]` automatically get `multiple=True`
+  - Standard behavior: `--tags python --tags rust --tags go` (repeat option)
+  - Users must repeat the option for multiple values (Click's standard `multiple=True`)
+  - Comma-separated values NOT supported by default (documented as intentional)
+
+- **Comma-separated list input (opt-in)** ✨
+  - Two ways to enable comma-separated parsing:
+    1. **Per-field annotation**: `Annotated[list[str], CommaSeparated]`
+    2. **Model-wide ClassVar**: `comma_separated_lists: ClassVar[bool] = True`
+  - Usage: `--tags python,rust,go` (single invocation with commas)
+  - Works with all list types: `list[str]`, `list[int]`, `list[float]`
+  - Custom Click ParamTypes: `CommaSeparatedStrings`, `CommaSeparatedInts`, `CommaSeparatedFloats`
+  - Per-field annotation takes priority over model-wide setting
+  - Automatically strips whitespace and filters empty items
+  - Full Pydantic validation preserved (min_length, max_length, etc.)
+
+- **ClassVar configuration: `comma_separated_lists`**
+  - Works like `env_prefix: ClassVar[str]` - class-level configuration
+  - NOT included in Pydantic model fields (won't appear in `model_fields` or `model_dump()`)
+  - Can be set on model class to enable comma-separated for all list fields
+  - Can be overridden in child classes
+  - AutoWryModel correctly skips ClassVar fields during processing
+
+### Fixed
+
+- **AutoWryModel ClassVar handling** 🐛
+  - Fixed bug where ClassVar annotations (like `env_prefix`, `comma_separated_lists`) would cause errors
+  - AutoWryModel now properly skips ClassVar fields during automatic processing
+  - Prevents `TypeError: typing.ClassVar[T] is not valid as type argument`
+
+### Tests
+
+- **22 new comprehensive tests** (471 → 493 total tests)
+  - `tests/unit/auto_model/test_auto_model_list_fields.py` - 11 tests for standard behavior
+    - Multiple types (str, int, bool, tuple)
+    - Default values, constraints, source tracking
+    - JSON config, environment variables, help text
+  - `tests/unit/auto_model/test_comma_separated_lists.py` - 11 tests for comma-separated
+    - Per-field annotations (7 tests)
+    - Model-wide ClassVar (2 tests)
+    - Mixed usage (2 tests)
+    - Edge cases: whitespace, empty items, type validation
+
+### Documentation
+
+- **README.md List Type Fields section**
+  - Clear explanation of standard `multiple=True` behavior
+  - Documentation that comma-separated is NOT default (by design)
+  - Two approaches for comma-separated (per-field and model-wide)
+  - Usage examples for both approaches
+  - Trade-offs and recommendations
+  - Implementation notes (ClassVar, priority rules, type support)
+
+- **AI_KNOWLEDGE_BASE.md comprehensive update**
+  - Edge case #5: List Fields Auto-Get multiple=True (expanded significantly)
+  - Detailed explanation of both standard and comma-separated approaches
+  - How it works: detection, type selection, parsing, priority
+  - Model-wide ClassVar details (similar to env_prefix pattern)
+  - Complete test coverage breakdown (22 tests documented)
+  - Edge cases validated
+  - When to use each approach
+
+- **Module docstrings**
+  - `wry/comma_separated.py` - Complete module documentation with both approaches
+  - Custom ParamType implementations with full docstrings
+
+### Technical Details
+
+- New module: `wry/comma_separated.py` with custom Click ParamTypes
+- Modified `wry/core/model.py`: Added `comma_separated_lists: ClassVar[bool] = False`
+- Modified `wry/auto_model.py`: Skip ClassVar fields (lines 62-68)
+- Modified `wry/click_integration.py`: Detect and handle comma-separated (lines 431-454)
+- Export `CommaSeparated` from `wry/__init__.py`
+
+### Breaking Changes
+
+None - all changes are opt-in or additive.
+
 ## [0.4.1] - 2025-10-07
 
 ### Fixed

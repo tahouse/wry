@@ -108,6 +108,9 @@ AutoOption = AutoClickParameter.OPTION
 AutoArgument = AutoClickParameter.ARGUMENT
 AutoExclude = AutoClickParameter.EXCLUDE
 
+# Comma-separated list support
+from .comma_separated import CommaSeparated  # noqa: E402
+
 # Help system
 from .help_system import get_help_content, print_help, show_help_index  # noqa: E402
 
@@ -136,6 +139,7 @@ __all__ = [
     "AutoOption",
     "AutoArgument",
     "AutoExclude",
+    "CommaSeparated",
     # Help system
     "get_help_content",
     "print_help",

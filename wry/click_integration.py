@@ -354,6 +354,8 @@ def generate_click_parameters(
         # Check what kind of Click integration we need
         click_parameter: ClickParameterDecorator[Any] | None = None
         field_type: AutoClickParameter | None = None
+        use_comma_separated: bool = False
+
         for item in metadata:
             if item == AutoClickParameter.OPTION:
                 field_type = AutoClickParameter.OPTION
@@ -371,6 +373,14 @@ def generate_click_parameters(
             ):
                 click_parameter = item
                 break
+            # Check for CommaSeparated marker
+            elif item.__class__.__name__ == "CommaSeparated" or (
+                hasattr(item, "__class__")
+                and item.__class__.__name__ == "type"
+                and hasattr(item, "__name__")
+                and item.__name__ == "CommaSeparated"
+            ):
+                use_comma_separated = True
 
         # Skip excluded fields
         if field_type == AutoClickParameter.EXCLUDE:
@@ -404,18 +414,46 @@ def generate_click_parameters(
 
             # Check if this is a list type that should support multiple=True
             is_list_type = False
+            list_element_type = None
             if hasattr(base_type, "__origin__"):
                 # Handle typing.List, typing.Tuple, etc.
                 if base_type.__origin__ is list or base_type.__origin__ is tuple:
                     is_list_type = True
+                    # Get the element type for comma-separated handling
+                    if hasattr(base_type, "__args__") and base_type.__args__:
+                        list_element_type = base_type.__args__[0]
             elif hasattr(base_type, "__args__") and base_type.__args__:
                 # Handle newer Python versions with | syntax
                 if get_origin(base_type) is list or get_origin(base_type) is tuple:
                     is_list_type = True
+                    list_element_type = get_args(base_type)[0]
 
-            # Add multiple=True for list types
+            # Handle list types - either multiple=True or comma-separated
             if is_list_type:
-                click_kwargs["multiple"] = True
+                # Check if comma-separated is enabled:
+                # 1. Per-field via CommaSeparated annotation (highest priority)
+                # 2. Model-wide via comma_separated_lists class variable
+                use_comma_sep = use_comma_separated or getattr(model_class, "comma_separated_lists", False)
+
+                if use_comma_sep:
+                    # Use comma-separated input instead of multiple=True
+                    from .comma_separated import (
+                        CommaSeparatedFloats,
+                        CommaSeparatedInts,
+                        CommaSeparatedStrings,
+                    )
+
+                    # Select appropriate comma-separated type based on element type
+                    if list_element_type is int:
+                        click_kwargs["type"] = CommaSeparatedInts()
+                    elif list_element_type is float:
+                        click_kwargs["type"] = CommaSeparatedFloats()
+                    else:  # Default to strings (includes str and other types)
+                        click_kwargs["type"] = CommaSeparatedStrings()
+                    # Don't set multiple=True for comma-separated
+                else:
+                    # Standard behavior: multiple=True
+                    click_kwargs["multiple"] = True
 
             # Handle Optional types - extract the actual type
             from typing import Union

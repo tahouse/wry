@@ -938,16 +938,174 @@ modified_arg = click.argument("field")  # No help parameter
 
 ### 5. List Fields Auto-Get multiple=True
 
+**Automatic behavior**: wry detects `list[T]` and `tuple[T, ...]` types and automatically adds `multiple=True` to the generated Click option.
+
 ```python
 tags: list[str] = Field(default_factory=list)
 
 # Auto-generates:
 click.option("--tags", multiple=True, type=click.STRING)
 
-# Usage:
+# CORRECT Usage - specify option multiple times:
 # --tags python --tags rust --tags go
 # Result: tags=["python", "rust", "go"]
+
+# Also correct - single value:
+# --tags python
+# Result: tags=["python"]
+
+# Also correct - no values (uses default):
+# (no --tags)
+# Result: tags=[]
 ```
+
+**IMPORTANT - Comma-separated values NOT supported**:
+
+```python
+# ❌ INCORRECT - This does NOT work as expected:
+# --tags python,rust,go
+# Result: tags=["python,rust,go"]  ← Single string with commas!
+
+# This is Click's behavior, not a wry limitation.
+# Users MUST pass the option multiple times for multiple values.
+```
+
+**Why not comma-separated?**
+
+- Click's `multiple=True` expects the option to be repeated
+- Comma parsing would require custom Click types
+- This matches standard Unix CLI conventions (see: grep -e, docker -v)
+
+**Works with all list types**:
+
+```python
+tags: list[str]        # Strings
+ports: list[int]       # Integers (with type validation)
+flags: list[bool]      # Booleans
+values: tuple[str, ...]  # Tuples also supported
+```
+
+**Tests**: See `tests/unit/auto_model/test_auto_model_list_fields.py` for comprehensive test coverage (11 tests)
+
+**Comma-Separated Alternative (NEW)**:
+
+For users who prefer comma-separated input, wry offers **two approaches**:
+
+**Approach 1: Per-Field Annotation (fine-grained control)**
+
+```python
+from wry import AutoWryModel, CommaSeparated
+from typing import Annotated
+
+class Config(AutoWryModel):
+    # Standard: --tags a --tags b --tags c
+    standard_tags: list[str] = Field(default_factory=list)
+
+    # Comma-separated: --csv-tags a,b,c
+    csv_tags: Annotated[list[str], CommaSeparated] = Field(
+        default_factory=list,
+        description="Comma-separated tags"
+    )
+
+    # Works with all types:
+    ports: Annotated[list[int], CommaSeparated] = Field(default_factory=list)
+    values: Annotated[list[float], CommaSeparated] = Field(default_factory=list)
+```
+
+**Approach 2: Model-Wide ClassVar (all list fields)**
+
+```python
+from wry import AutoWryModel
+from typing import ClassVar
+
+class Config(AutoWryModel):
+    # Enable comma-separated for ALL list fields
+    comma_separated_lists: ClassVar[bool] = True
+
+    # All these now accept comma-separated input
+    tags: list[str] = Field(default_factory=list)       # --tags a,b,c
+    ports: list[int] = Field(default_factory=list)      # --ports 80,443
+    values: list[float] = Field(default_factory=list)   # --values 1.5,2.7
+```
+
+**Which to use?**
+
+- **Per-field**: When only specific fields should be comma-separated, or mixing styles
+- **Model-wide**: When all lists should consistently use comma-separated (Docker-style CLIs)
+
+**How it works**:
+
+- **Per-field**: Detects `CommaSeparated` in field metadata
+- **Model-wide**: Checks `comma_separated_lists: ClassVar[bool]` on model class
+- Per-field annotation takes priority over model-wide setting
+- Uses custom Click `ParamType` (CommaSeparatedStrings, CommaSeparatedInts, CommaSeparatedFloats)
+- Disables `multiple=True` for comma-separated fields
+- Parses comma-separated input and strips whitespace
+- Filters out empty items from multiple commas
+
+**Model-wide ClassVar details**:
+
+- Works like `env_prefix: ClassVar[str]` - a class-level configuration
+- Defined as `comma_separated_lists: ClassVar[bool] = False` in WryModel base
+- NOT included in Pydantic model fields (won't appear in `model_fields` or `model_dump()`)
+- AutoWryModel skips ClassVar fields during automatic processing
+- Can be overridden in child classes
+
+**Trade-offs**:
+
+- ✅ More concise for many values
+- ✅ Familiar to users of tools accepting comma-separated lists
+- ⚠️ Cannot combine with repeating option
+- ⚠️ Commas in values need escaping/quoting
+- ⚠️ Less discoverable (users might not know about comma support)
+
+**When to use**:
+
+- Tool has established comma-separated convention
+- Users expect Docker-style `-p 80,443,8080` syntax
+- Values never contain commas
+
+**When NOT to use**:
+
+- Users are accustomed to `grep -e` style repetition
+- Values might contain commas
+- Discoverability is important (repeating options is more obvious)
+
+**Default recommendation**: Use standard `multiple=True` (default behavior) unless you have specific reasons to use comma-separated.
+
+**Test Coverage (22 tests total)**:
+
+Standard `multiple=True` tests (`test_auto_model_list_fields.py` - 11 tests):
+
+- ✅ Auto-generation of `multiple=True` for `list[str]`, `list[int]`, `list[bool]`, `tuple[T, ...]`
+- ✅ Default values (Field default, default_factory)
+- ✅ Pydantic constraints (min_length, max_length) enforcement
+- ✅ Source tracking (CLI/ENV/JSON/DEFAULT)
+- ✅ JSON config integration
+- ✅ Help text generation
+- ✅ Empty list vs no value distinction
+- ✅ Environment variable behavior documented
+
+Comma-separated tests (`test_comma_separated_lists.py` - 11 tests):
+
+- ✅ Per-field annotation: `Annotated[list[T], CommaSeparated]` for str/int/float
+- ✅ Model-wide ClassVar: `comma_separated_lists: ClassVar[bool] = True`
+- ✅ Mixed usage (standard + comma-separated in same model)
+- ✅ Per-field annotation overrides model-wide setting
+- ✅ Whitespace handling, empty item filtering, trailing commas
+- ✅ Type conversion validation (invalid int/float)
+- ✅ Pydantic validation still works (min_length, max_length)
+- ✅ JSON config integration with comma-separated
+- ✅ Source tracking works correctly
+- ✅ ClassVar not included in model_fields or model_dump()
+
+Edge cases validated:
+
+- Multiple consecutive commas → filtered
+- Single value without comma → works
+- Mixing both styles in same model → works
+- Type conversion errors → proper error messages
+- Default values with both approaches → works
 
 ### 6. Optional Types Handled
 

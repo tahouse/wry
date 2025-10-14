@@ -56,6 +56,7 @@ class WryModel(BaseModel):
 
     # Class variables that should not trigger Pydantic warnings
     env_prefix: ClassVar[str] = ""
+    comma_separated_lists: ClassVar[bool] = False  # If True, all list fields use comma-separated input
     _value_sources: dict[str, ValueSource] = {}
     _accessor_instances: dict[str, Any] = {}
 
