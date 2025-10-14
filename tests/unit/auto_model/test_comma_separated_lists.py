@@ -427,3 +427,82 @@ class TestCommaSeparatedLists:
         assert result.exit_code == 0, f"Failed: {result.output}"
         assert "Tags: ['a', 'b', 'c']" in result.output
         assert "Ports: [80, 443]" in result.output
+
+    def test_model_wide_setting_does_not_affect_non_list_fields(self):
+        """Test that comma_separated_lists only affects list fields, not other types."""
+        from typing import ClassVar
+
+        class Config(AutoWryModel):
+            """Config with comma-separated enabled but also non-list fields."""
+
+            # Enable comma-separated for list fields
+            comma_separated_lists: ClassVar[bool] = True
+
+            # List field - should use comma-separated
+            tags: list[str] = Field(default_factory=list, description="Tags")
+
+            # Non-list fields - should NOT be affected
+            name: str = Field(default="test", description="Name")
+            count: int = Field(default=0, description="Count")
+            enabled: bool = Field(default=False, description="Enabled")
+
+            # Explicit click.option with count=True (like -vvv for verbose)
+            verbose: Annotated[
+                int,
+                click.option(
+                    "--verbose",
+                    "-v",
+                    count=True,
+                    help="Increase verbosity (-v, -vv, -vvv)",
+                ),
+            ] = Field(default=0, description="Verbosity level")
+
+        @click.command()
+        @Config.generate_click_parameters()
+        @click.pass_context
+        def cmd(ctx: click.Context, **kwargs: Any):
+            """Test command."""
+            config = Config.from_click_context(ctx, **kwargs)
+            click.echo(f"Tags: {config.tags}")
+            click.echo(f"Name: {config.name}")
+            click.echo(f"Count: {config.count}")
+            click.echo(f"Enabled: {config.enabled}")
+            click.echo(f"Verbose: {config.verbose}")
+            return config
+
+        runner = CliRunner()
+
+        # Test that list field uses comma-separated
+        result = runner.invoke(cmd, ["--tags", "a,b,c"])
+        assert result.exit_code == 0, f"Failed: {result.output}"
+        assert "Tags: ['a', 'b', 'c']" in result.output
+
+        # Test that non-list fields work normally
+        result = runner.invoke(
+            cmd,
+            [
+                "--tags",
+                "x,y",
+                "--name",
+                "Alice",
+                "--count",
+                "42",
+                "--enabled",
+                "-vvv",  # Should count to 3
+            ],
+        )
+        assert result.exit_code == 0, f"Failed: {result.output}"
+        assert "Tags: ['x', 'y']" in result.output
+        assert "Name: Alice" in result.output
+        assert "Count: 42" in result.output
+        assert "Enabled: True" in result.output
+        assert "Verbose: 3" in result.output  # -vvv = 3
+
+        # Test verbose counting separately
+        result = runner.invoke(cmd, ["-v"])
+        assert result.exit_code == 0
+        assert "Verbose: 1" in result.output
+
+        result = runner.invoke(cmd, ["-vv"])
+        assert result.exit_code == 0
+        assert "Verbose: 2" in result.output
