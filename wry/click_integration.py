@@ -13,7 +13,7 @@ import inspect
 import types
 from collections.abc import Callable, Mapping, Sequence
 from enum import Enum, auto
-from typing import Any, TypeAlias, cast, get_args, get_origin, get_type_hints
+from typing import Any, TypeAlias, Union, cast, get_args, get_origin, get_type_hints
 
 import click
 from annotated_types import (
@@ -342,14 +342,43 @@ def generate_click_parameters(
     for field_name, field_info in model_class.model_fields.items():
         annotation = type_hints.get(field_name)
 
-        # Skip fields without annotations
+        # Handle Optional/Union wrapping Annotated types
+        # e.g., Annotated[list[str], CommaSeparated] | None
         origin = get_origin(annotation)
+        if origin is not None and (
+            origin is Union or (hasattr(types, "UnionType") and isinstance(annotation, types.UnionType))
+        ):
+            # Unwrap Optional/Union to get the inner type
+            args = get_args(annotation)
+            non_none_types = [arg for arg in args if arg is not type(None)]
+            if non_none_types:
+                annotation = non_none_types[0]
+                origin = get_origin(annotation)
+
+        # Skip fields without annotations
         # Compare using string representation to handle module reload scenarios
         if origin is None or str(origin) != "<class 'typing.Annotated'>":
             continue
 
         # Get metadata from annotation
         metadata = get_args(annotation)[1:]
+
+        # Also check for metadata inside Optional/Union types
+        # e.g., Annotated[Optional[Annotated[list[str], CommaSeparated]], AutoOption]
+        base_type_for_metadata = get_args(annotation)[0]
+        if get_origin(base_type_for_metadata) is Union or (
+            hasattr(types, "UnionType") and isinstance(base_type_for_metadata, types.UnionType)
+        ):
+            # Unwrap Optional to check for inner Annotated
+            inner_args = get_args(base_type_for_metadata)
+            inner_non_none = [arg for arg in inner_args if arg is not type(None)]
+            if inner_non_none and get_origin(inner_non_none[0]) is not None:
+                inner_origin = get_origin(inner_non_none[0])
+                if str(inner_origin) == "<class 'typing.Annotated'>":
+                    # Extract metadata from inner Annotated
+                    inner_metadata = get_args(inner_non_none[0])[1:]
+                    # Combine with outer metadata
+                    metadata = tuple(metadata) + tuple(inner_metadata)
 
         # Check what kind of Click integration we need
         click_parameter: ClickParameterDecorator[Any] | None = None
@@ -417,7 +446,24 @@ def generate_click_parameters(
             # Determine Click type from annotation
             base_type = get_args(annotation)[0]
 
+            # Handle Optional types FIRST - extract the actual type
+            # Check for both typing.Union and types.UnionType (Python 3.10+ | syntax)
+            if get_origin(base_type) is Union or (
+                hasattr(types, "UnionType") and isinstance(base_type, types.UnionType)
+            ):
+                # Get the non-None type from Optional[X] or Union[X, None]
+                args = get_args(base_type)
+                non_none_types = [arg for arg in args if arg is not type(None)]
+                if non_none_types:
+                    base_type = non_none_types[0]
+
+            # If after unwrapping Optional, we have an Annotated type, unwrap that too
+            # e.g., Optional[Annotated[list[str], CommaSeparated]] -> list[str]
+            if get_origin(base_type) is not None and str(get_origin(base_type)) == "<class 'typing.Annotated'>":
+                base_type = get_args(base_type)[0]
+
             # Check if this is a list type that should support multiple=True
+            # (Now base_type has been unwrapped from Optional and Annotated if needed)
             is_list_type = False
             list_element_type = None
             if hasattr(base_type, "__origin__"):
@@ -459,19 +505,6 @@ def generate_click_parameters(
                 else:
                     # Standard behavior: multiple=True
                     click_kwargs["multiple"] = True
-
-            # Handle Optional types - extract the actual type
-            from typing import Union
-
-            # Check for both typing.Union and types.UnionType (Python 3.10+ | syntax)
-            if get_origin(base_type) is Union or (
-                hasattr(types, "UnionType") and isinstance(base_type, types.UnionType)
-            ):
-                # Get the non-None type from Optional[X]
-                args = get_args(base_type)
-                non_none_types = [arg for arg in args if arg is not type(None)]
-                if non_none_types:
-                    base_type = non_none_types[0]
 
             if base_type is bool:
                 click_kwargs["is_flag"] = True
@@ -533,8 +566,6 @@ def generate_click_parameters(
             base_type = get_args(annotation)[0]
 
             # Handle Optional types - extract the actual type
-            from typing import Union
-
             # Check for both typing.Union and types.UnionType (Python 3.10+ | syntax)
             if get_origin(base_type) is Union or (
                 hasattr(types, "UnionType") and isinstance(base_type, types.UnionType)

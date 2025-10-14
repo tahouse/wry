@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2025-10-14
+
+### Fixed
+
+- **Optional list fields with comma-separated parsing** 🐛
+  **THE BIG ONE:** Fixed critical bug where `list[str] | None` and `Optional[list[str]]` fields didn't work with comma-separated parsing
+  - **Root cause**: Nested `Annotated` types created by `AutoWryModel` (e.g., `Annotated[Optional[Annotated[list[str], CommaSeparated]], AutoOption]`) weren't being properly unwrapped
+  - **Fix 1**: Extract metadata from inner `Annotated` types within `Optional`/`Union` wrappers
+  - **Fix 2**: Unwrap `Annotated` types after unwrapping `Optional` to get to the base list type
+  - Works with both model-wide `comma_separated_lists` ClassVar and per-field `CommaSeparated` annotation
+  - Works with `list[str] | None`, `Optional[list[T]]`, and all numeric types (int, float)
+
+### Added
+
+- **Comprehensive tests for optional comma-separated lists** ✅
+  Added 13 test cases covering all use cases and edge cases:
+  - MVP bug: `list[str] | None` with model-wide `comma_separated_lists`
+  - Per-field `Annotated[list[T], CommaSeparated] | None`
+  - Old-style `Optional[list[T]]` syntax
+  - Multiple types: str, int, float
+  - Required vs optional lists
+  - Source tracking verification
+  - Default values: `None`, `[]`, `default_factory`
+  - Space handling in comma-separated input
+  - Double-nested `Annotated` types (the actual bug pattern)
+  - **Total test count: 507 tests (all passing)** ✨
+
 ## [0.5.1] - 2025-10-14
 
 ### Fixed
