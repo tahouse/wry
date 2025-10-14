@@ -1027,6 +1027,7 @@ mypy wry
 wry has comprehensive documentation for different audiences:
 
 ### For Users
+
 - 📘 **`README.md`** (this file) - Getting started, features, usage examples
 - 📁 **`examples/`** - Working code examples
   - `examples/autowrymodel_comprehensive.py` - Complete AutoWryModel features
@@ -1034,12 +1035,14 @@ wry has comprehensive documentation for different audiences:
   - `examples/multimodel_comprehensive.py` - Multi-model usage
 
 ### For Contributors
+
 - 📖 **`CONTRIBUTING.md`** - Complete contributor guide with code patterns and checklists
 - 🤖 **`.cursorrules`** - AI assistant quick reference (references CONTRIBUTING.md)
 - 🚀 **`RELEASE_PROCESS.md`** - How to create releases and manage versions
 - 📋 **`TODO.md`** - Current tasks, planned features, and work in progress
 
 ### Technical Reference
+
 - 📚 **`AI_KNOWLEDGE_BASE.md`** - Complete technical reference for AI/LLMs (also useful for humans)
 - 📝 **`CHANGELOG.md`** - Version history and all changes
 - 🧪 **`tests/README.md`** - Test organization and structure
@@ -1048,12 +1051,14 @@ wry has comprehensive documentation for different audiences:
 ### Quick Start Navigation
 
 **I'm a user, I want to...**
+
 - Get started → README.md "Quick Start" section
 - See examples → `examples/` directory
 - Understand features → README.md "Features" section
 - Track config sources → README.md "Value Source Tracking" section
 
 **I'm a contributor, I want to...**
+
 - Set up development → CONTRIBUTING.md "Development Setup" section
 - Add a feature → CONTRIBUTING.md "Adding New Features" section
 - Run tests → CONTRIBUTING.md "Testing" section
@@ -1061,6 +1066,7 @@ wry has comprehensive documentation for different audiences:
 - Check current tasks → TODO.md
 
 **I'm an AI assistant, I want to...**
+
 - Quick reference → `.cursorrules`
 - Technical details → `AI_KNOWLEDGE_BASE.md`
 - Code patterns → `CONTRIBUTING.md`
