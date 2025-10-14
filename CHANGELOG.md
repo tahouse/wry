@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Development guidelines** 📚
+  - Created `.cursorrules` as AI assistant's quick reference guide
+  - Created `CONTRIBUTING.md` as comprehensive contributor guide
+  - `.cursorrules` references `CONTRIBUTING.md` for detailed explanations
+  - Both tailored specifically for wry development patterns
+
+### Tests
+
+- **Additional comma-separated test** (494 total tests)
+  - `test_model_wide_setting_does_not_affect_non_list_fields`
+  - Validates that `comma_separated_lists: ClassVar[bool] = True` only affects list fields
+  - Non-list fields (str, int, bool) work normally
+  - Explicit `click.option` decorators (like `-vvv` for verbose) are not affected
+  - Tests real-world use case: model-wide comma-separated + verbose counting
+
 ## [0.5.0] - 2025-10-14
 
 ### Added
