@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2025-10-19
+
 ### Added
 
 - **Boolean on/off flags** - Boolean fields now generate `--option/--no-option` pattern by default 🎚️
