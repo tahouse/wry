@@ -84,6 +84,9 @@ __email__ = "26489166+tahouse@users.noreply.github.com"
 from .auto_model import AutoWryModel, create_auto_model  # noqa: E402
 from .click_integration import (  # noqa: E402
     AutoClickParameter,
+    WryArgument,
+    WryExclude,
+    WryOption,
     build_config_with_sources,
     config_option,
     eager_json_config,
@@ -103,10 +106,10 @@ from .multi_model import (  # noqa: E402
     split_kwargs_by_model,
 )
 
-# Convenience aliases
-AutoOption = AutoClickParameter.OPTION
-AutoArgument = AutoClickParameter.ARGUMENT
-AutoExclude = AutoClickParameter.EXCLUDE
+# Public API - export classes directly with backwards-compatible names
+AutoOption = WryOption
+AutoArgument = WryArgument
+AutoExclude = WryExclude
 
 # Comma-separated list support
 from .comma_separated import CommaSeparated  # noqa: E402
@@ -135,7 +138,11 @@ __all__ = [
     "create_models",
     "split_kwargs_by_model",
     "singleton_option",
-    # Convenience exports
+    # Wry markers (new API)
+    "WryOption",
+    "WryArgument",
+    "WryExclude",
+    # Convenience exports (aliases)
     "AutoOption",
     "AutoArgument",
     "AutoExclude",

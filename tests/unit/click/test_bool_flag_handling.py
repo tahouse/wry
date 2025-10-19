@@ -27,12 +27,12 @@ class TestBoolFlagHandling:
 
         params_by_name = {p.name: p for p in cmd.params}
 
-        # Bool fields should be flags
+        # Bool fields should be flags (on/off pattern)
         assert "enabled" in params_by_name
         enabled_param = params_by_name["enabled"]
         assert enabled_param.is_flag
-        # Flags don't show defaults
-        assert not hasattr(enabled_param, "show_default") or not enabled_param.show_default
+        # On/off flags can show defaults (which option is default)
+        # This is different from single flags which don't show defaults
 
         # Optional bool should also be a flag
         assert "verbose" in params_by_name

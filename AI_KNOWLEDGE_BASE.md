@@ -1,10 +1,11 @@
 # wry - Comprehensive AI/LLM Knowledge Base
 
-**Last Updated**: 2025-10-14
-**Version**: 0.5.0+
+**Last Updated**: 2025-10-19
+**Version**: 0.6.0+
 **Purpose**: Complete reference for AI assistants and LLMs to understand wry without reading the entire codebase
 
 **Related Documentation**:
+
 - 📖 **`CONTRIBUTING.md`** - Comprehensive contributor guide (referenced by `.cursorrules`)
 - 🤖 **`.cursorrules`** - AI assistant quick reference (references this file and CONTRIBUTING.md)
 - 📘 **`README.md`** - User-facing documentation
@@ -23,10 +24,13 @@
 4. Tracking exactly where each value came from
 5. Enforcing strict precedence: CLI > JSON > ENV > DEFAULT
 6. **NEW v0.3.2**: Automatic alias-based CLI option generation
+7. **NEW v0.6.0**: Boolean on/off flags (`--option/--no-option` pattern)
+8. **NEW v0.6.0**: Callable marker API with parameters (`AutoOption()`, `AutoArgument()`, `AutoExclude()`)
+9. **NEW v0.6.0**: wry-prefixed ClassVars for future-proof configuration
 
 **Key Innovation**: Single source of truth for configuration with comprehensive source tracking.
 
-**Stats**: 494 tests (all passing), 92%+ coverage, supports Python 3.10-3.12, Pydantic v2.11+ compatible
+**Stats**: 535 tests (all passing), 88%+ coverage, supports Python 3.10-3.12, Pydantic v2.11+ compatible
 
 **For Contributors**: See `CONTRIBUTING.md` for development guidelines and `.cursorrules` for AI assistant rules
 
@@ -878,26 +882,42 @@ def eager_json_config(ctx, param, value):
 
 ## Edge Cases & Gotchas
 
-### 1. env_prefix Must Be ClassVar ⚠️
+### 1. wry_ Prefixed ClassVars (v0.6.0+) ⚠️
+
+**NEW v0.6.0**: Use `wry_` prefixed ClassVars for configuration.
 
 ```python
-# WRONG - Creates a field, shadows parent
+# OLD (deprecated but still works):
 class Config(AutoWryModel):
-    env_prefix: str = "MYAPP_"  # ❌
+    env_prefix: ClassVar[str] = "MYAPP_"  # ⚠️ Deprecated
+    comma_separated_lists: ClassVar[bool] = True  # ⚠️ Deprecated
 
-# CORRECT - Class attribute, not a field
+# NEW (recommended):
 class Config(AutoWryModel):
-    env_prefix: ClassVar[str] = "MYAPP_"  # ✅
+    wry_env_prefix: ClassVar[str] = "MYAPP_"  # ✅ New naming
+    wry_comma_separated_lists: ClassVar[bool] = True  # ✅ New naming
+    wry_boolean_off_prefix: ClassVar[str] = "no"  # ✅ New feature
+
+# WRONG - Not using ClassVar:
+class Config(AutoWryModel):
+    wry_env_prefix: str = "MYAPP_"  # ❌ Still wrong!
 ```
 
-**Why this matters**:
+**Why ClassVar matters**:
 
 - Without `ClassVar`, Pydantic treats it as a field
 - Field appears in `model_fields`, gets CLI option generated
-- Shadows `WryModel.env_prefix` class attribute
-- Env var detection breaks
+- Shadows `WryModel` class attributes
+- Configuration breaks
 
-**How to detect**: Warning message about shadowing parent attribute.
+**Why wry_ prefix?**
+
+- Avoids namespace collisions with user fields
+- Makes wry configuration explicit
+- Future-proof for new configuration options
+- Old names auto-migrate with deprecation warnings
+
+**Migration**: Old names still work (auto-migrated) but emit `DeprecationWarning`.
 
 ### 2. Source Tracking Requires Context
 
@@ -1125,17 +1145,35 @@ timeout: Optional[int] = Field(default=None)
 # Generates: click.option("--timeout", type=click.INT, default=None)
 ```
 
-### 7. Boolean Fields Become Flags
+### 7. Boolean Fields Use On/Off Pattern (NEW v0.6.0)
+
+**Changed in v0.6.0**: Boolean fields now generate `--option/--no-option` pattern by default.
 
 ```python
 debug: bool = Field(default=False)
 
-# Auto-generates:
-click.option("--debug", is_flag=True)
+# Auto-generates (NEW):
+click.option("--debug/--no-debug", default=False)
 
-# Usage: --debug (sets to True)
-# NOT: --debug true (doesn't work with flags)
+# Usage:
+# --debug (sets to True)
+# --no-debug (sets to False)
+
+# Customization:
+verbose: Annotated[bool, AutoOption(flag_off_option="quiet")] = Field(default=False)
+# → --verbose/--quiet
+
+# Opt-out to single flag (old behavior):
+simple: Annotated[bool, AutoOption(flag_enable_on_off=False)] = Field(default=False)
+# → --simple (single flag)
 ```
+
+**Why the change?**
+
+- More explicit: users can clearly specify both on and off states
+- Follows Click best practices
+- Better UX: `--no-debug` is clearer than absence of `--debug`
+- Backwards compatible via opt-out
 
 ### 8. Arguments Are Always Optional (For --config)
 
@@ -1705,8 +1743,32 @@ class TrackedValue
 class FieldWithSource
     """Value wrapper exposing .source attribute."""
 
+# NEW v0.6.0: Callable marker classes
+class WryOption
+    """Marker for auto-generated Click options with customization.
+
+    Parameters:
+        required: bool = False
+        flag_enable_on_off: bool = True (for bool fields)
+        flag_off_prefix: str | None = None (for bool fields)
+        flag_off_option: str | None = None (for bool fields)
+    """
+
+class WryArgument
+    """Marker for auto-generated Click arguments."""
+
+class WryExclude
+    """Marker to exclude field from CLI generation."""
+
+# Public API aliases
+AutoOption = WryOption      # Backwards-compatible name
+AutoArgument = WryArgument  # Backwards-compatible name
+AutoExclude = WryExclude    # Backwards-compatible name
+
+# DEPRECATED v0.6.0: Old enum-based API
 class AutoClickParameter(Enum)
-    """OPTION, REQUIRED_OPTION, ARGUMENT, EXCLUDE"""
+    """Deprecated: Use AutoOption(), AutoArgument(), AutoExclude() instead.
+    OPTION, REQUIRED_OPTION, ARGUMENT, EXCLUDE"""
 
 # Accessors (returned by @property)
 class SourceAccessor

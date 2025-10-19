@@ -14,25 +14,25 @@ from wry.multi_model import create_models, multi_model, split_kwargs_by_model
 class ServerArgs(WryModel):
     """Server arguments."""
 
-    host: Annotated[str, AutoOption] = Field(default="localhost", description="Server host")
-    port: Annotated[int, AutoOption] = Field(default=8080, description="Server port", ge=1, le=65535)
-    workers: Annotated[int, AutoOption] = Field(default=4, description="Number of workers")
+    host: Annotated[str, AutoOption()] = Field(default="localhost", description="Server host")
+    port: Annotated[int, AutoOption()] = Field(default=8080, description="Server port", ge=1, le=65535)
+    workers: Annotated[int, AutoOption()] = Field(default=4, description="Number of workers")
 
 
 class DatabaseArgs(WryModel):
     """Database arguments."""
 
-    url: Annotated[str, AutoOption] = Field(description="Database URL")
-    pool_size: Annotated[int, AutoOption] = Field(default=10, description="Connection pool size")
-    timeout: Annotated[int, AutoOption] = Field(default=30, description="Query timeout in seconds")
+    url: Annotated[str, AutoOption()] = Field(description="Database URL")
+    pool_size: Annotated[int, AutoOption()] = Field(default=10, description="Connection pool size")
+    timeout: Annotated[int, AutoOption()] = Field(default=30, description="Query timeout in seconds")
 
 
 class SecurityArgs(WryModel):
     """Security arguments."""
 
-    api_key: Annotated[str, AutoOption] = Field(description="API key for authentication")
-    enable_cors: Annotated[bool, AutoOption] = Field(default=True, description="Enable CORS")
-    allowed_origins: Annotated[str, AutoOption] = Field(default="*", description="Allowed CORS origins")
+    api_key: Annotated[str, AutoOption()] = Field(description="API key for authentication")
+    enable_cors: Annotated[bool, AutoOption()] = Field(default=True, description="Enable CORS")
+    allowed_origins: Annotated[str, AutoOption()] = Field(default="*", description="Allowed CORS origins")
 
 
 # Method 1: Manual splitting

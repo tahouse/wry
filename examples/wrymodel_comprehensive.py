@@ -14,7 +14,7 @@ This example demonstrates:
 - Environment variable support with custom prefix
 """
 
-from typing import Annotated, Any
+from typing import Annotated, Any, ClassVar
 
 import click
 from pydantic import Field
@@ -25,38 +25,50 @@ from wry import AutoArgument, AutoOption, ValueSource, WryModel
 class ServerConfig(WryModel):
     """Server configuration with manual field control and source tracking."""
 
-    env_prefix = "SERVER_"
+    wry_env_prefix: ClassVar[str] = "SERVER_"
 
     # ============================================================================
-    # ARGUMENTS - Must explicitly annotate with AutoArgument
+    # ARGUMENTS - Must explicitly annotate with AutoArgument()
+    # Use callable pattern: AutoArgument() not AutoArgument
     # ============================================================================
 
-    config_file: Annotated[str, AutoArgument] = Field(
+    config_file: Annotated[str, AutoArgument()] = Field(
         description="Configuration file path (required positional argument)"
     )
 
     # ============================================================================
-    # OPTIONS - Must explicitly annotate with AutoOption
+    # OPTIONS - Must explicitly annotate with AutoOption()
     # ============================================================================
 
-    host: Annotated[str, AutoOption] = Field(
+    host: Annotated[str, AutoOption()] = Field(
         default="localhost",
         description="Server host address",
     )
 
-    port: Annotated[int, AutoOption] = Field(
+    port: Annotated[int, AutoOption()] = Field(
         default=8080,
         ge=1,
         le=65535,
         description="Server port number",
     )
 
-    debug: Annotated[bool, AutoOption] = Field(
+    # ============================================================================
+    # BOOLEAN FLAGS - On/off pattern (v0.6.0+)
+    # Must use AutoOption() - boolean on/off is automatic
+    # ============================================================================
+
+    debug: Annotated[bool, AutoOption()] = Field(
         default=False,
-        description="Enable debug mode",
+        description="Enable debug mode (--debug/--no-debug)",
     )
 
-    workers: Annotated[int, AutoOption] = Field(
+    # Custom off-option for boolean
+    verbose: Annotated[bool, AutoOption(flag_off_option="quiet")] = Field(
+        default=False,
+        description="Verbose output (--verbose/--quiet)",
+    )
+
+    workers: Annotated[int, AutoOption()] = Field(
         default=4,
         ge=1,
         le=32,
@@ -68,13 +80,13 @@ class ServerConfig(WryModel):
     # Concise Python field names → Descriptive CLI options
     # ============================================================================
 
-    db_url: Annotated[str, AutoOption] = Field(
+    db_url: Annotated[str, AutoOption()] = Field(
         alias="database_url",
         default="sqlite:///app.db",
         description="Database connection URL",
     )
 
-    max_conns: Annotated[int, AutoOption] = Field(
+    max_conns: Annotated[int, AutoOption()] = Field(
         alias="maximum_connections",
         default=100,
         ge=1,

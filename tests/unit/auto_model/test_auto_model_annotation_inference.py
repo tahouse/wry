@@ -4,7 +4,7 @@ from typing import get_args, get_origin
 
 from pydantic import Field
 
-from wry import AutoClickParameter, AutoWryModel
+from wry import AutoWryModel, WryOption
 
 
 class TestAnnotationInference:
@@ -23,8 +23,8 @@ class TestAnnotationInference:
             origin = get_origin(annotation)
             if origin:  # Should be Annotated
                 args = get_args(annotation)
-                # Should have AutoClickParameter.OPTION
-                assert AutoClickParameter.OPTION in args
+                # Should have WryOption instance
+                assert any(isinstance(arg, WryOption) for arg in args)
                 # Should preserve int type
                 assert int in args or (args and args[0] is int)
 
@@ -41,7 +41,7 @@ class TestAnnotationInference:
             origin = get_origin(annotation)
             if origin:  # Should be Annotated
                 args = get_args(annotation)
-                # Should have AutoClickParameter added
-                assert AutoClickParameter.OPTION in args
+                # Should have WryOption instance added
+                assert any(isinstance(arg, WryOption) for arg in args)
                 # Type should be preserved
                 assert str in args or (args and args[0] is str)

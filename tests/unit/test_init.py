@@ -64,11 +64,19 @@ class TestVersionHandling:
         """Test that backward compatibility aliases work."""
         import wry
 
-        # AutoOption should be an alias for AutoClickParameter.OPTION
-        assert wry.AutoOption == wry.AutoClickParameter.OPTION
+        # NEW API: AutoOption is now a class (WryOption)
+        assert wry.AutoOption is wry.WryOption
 
-        # AutoArgument should be an alias for AutoClickParameter.ARGUMENT
-        assert wry.AutoArgument == wry.AutoClickParameter.ARGUMENT
+        # NEW API: AutoArgument is now a class (WryArgument)
+        assert wry.AutoArgument is wry.WryArgument
+
+        # NEW API: AutoExclude is now a class (WryExclude)
+        assert wry.AutoExclude is wry.WryExclude
+
+        # OLD API: AutoClickParameter enum still exists but is deprecated
+        assert hasattr(wry, "AutoClickParameter")
+        assert wry.AutoClickParameter.OPTION is not None
+        assert wry.AutoClickParameter.ARGUMENT is not None
 
         # We removed backward compatibility aliases
         # generate_click_options is no longer available

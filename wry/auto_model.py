@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Annotated, Any, get_args, get_origin
 
 from pydantic.fields import FieldInfo
 
-from .click_integration import AutoClickParameter
+from .click_integration import AutoClickParameter, WryArgument, WryExclude, WryOption
 from .core import WryModel
 
 if TYPE_CHECKING:
@@ -59,7 +59,8 @@ class AutoWryModel(WryModel):
             if attr_name.startswith("_"):
                 continue
 
-            # Skip ClassVar annotations (class-level config like env_prefix, comma_separated_lists)
+            # Skip ClassVar annotations (class-level config like wry_env_prefix,
+            # wry_comma_separated_lists, wry_boolean_off_prefix)
             origin = get_origin(annotation)
             if origin is not None:
                 # ClassVar check - handle both typing.ClassVar and typing_extensions.ClassVar
@@ -73,8 +74,14 @@ class AutoWryModel(WryModel):
                 # Check if it has any Click-related metadata
                 metadata = get_args(annotation)[1:]
                 has_click_metadata = any(
-                    # Check for AutoClickParameter enums
+                    # Check for AutoClickParameter enums (deprecated)
                     isinstance(m, AutoClickParameter)
+                    or
+                    # Check for new Wry marker instances
+                    isinstance(m, WryOption | WryArgument | WryExclude)
+                    or
+                    # Check for Wry marker classes (for backwards compat with old pattern)
+                    m in (WryOption, WryArgument, WryExclude)
                     or
                     # Check for Click decorators
                     (hasattr(m, "__module__") and "click" in str(m.__module__))
@@ -88,22 +95,20 @@ class AutoWryModel(WryModel):
                 # Add AutoOption to existing annotation
                 base_type = get_args(annotation)[0]
                 # For Python 3.10 compatibility, we need to reconstruct manually
-                # Create a new annotation with AutoOption prepended to existing metadata
+                # Create a new annotation with WryOption() prepended to existing metadata
                 if not metadata:
-                    cls.__annotations__[attr_name] = Annotated[base_type, AutoClickParameter.OPTION]
+                    cls.__annotations__[attr_name] = Annotated[base_type, WryOption()]
                 elif len(metadata) == 1:
-                    cls.__annotations__[attr_name] = Annotated[base_type, AutoClickParameter.OPTION, metadata[0]]
+                    cls.__annotations__[attr_name] = Annotated[base_type, WryOption(), metadata[0]]
                 elif len(metadata) == 2:
-                    cls.__annotations__[attr_name] = Annotated[
-                        base_type, AutoClickParameter.OPTION, metadata[0], metadata[1]
-                    ]
+                    cls.__annotations__[attr_name] = Annotated[base_type, WryOption(), metadata[0], metadata[1]]
                 else:
                     # For more metadata, we skip adding AutoOption to avoid complexity
                     # This is a rare case and the field will still work
                     pass
             else:
                 # Not annotated, add AutoOption
-                cls.__annotations__[attr_name] = Annotated[annotation, AutoClickParameter.OPTION]
+                cls.__annotations__[attr_name] = Annotated[annotation, WryOption()]
 
         # Also process fields that are defined with Field() but not in annotations
         for attr_name in dir(cls):
@@ -116,7 +121,7 @@ class AutoWryModel(WryModel):
             if isinstance(attr_value, FieldInfo):
                 # No annotation, infer type from field
                 field_type = attr_value.annotation or Any
-                cls.__annotations__[attr_name] = Annotated[field_type, AutoClickParameter.OPTION]
+                cls.__annotations__[attr_name] = Annotated[field_type, WryOption()]
 
 
 # Convenience function for creating auto models dynamically

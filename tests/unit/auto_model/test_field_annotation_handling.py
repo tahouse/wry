@@ -4,7 +4,7 @@ from typing import get_args, get_origin
 
 from pydantic import Field
 
-from wry import AutoClickParameter, AutoWryModel
+from wry import AutoWryModel, WryOption
 
 
 class TestFieldAnnotationHandling:
@@ -26,7 +26,7 @@ class TestFieldAnnotationHandling:
                     args = get_args(annotation)
                     # Should have preserved the str type
                     assert str in args or (args and args[0] is str)
-                    assert AutoClickParameter.OPTION in args
+                    assert any(isinstance(arg, WryOption) for arg in args)
 
     def test_field_info_without_annotation_uses_any(self):
         """Test that fields are processed correctly."""
@@ -44,7 +44,7 @@ class TestFieldAnnotationHandling:
                     args = get_args(annotation)
                     # Should have the type
                     assert int in args or (args and args[0] is int)
-                    assert AutoClickParameter.OPTION in args
+                    assert any(isinstance(arg, WryOption) for arg in args)
 
     def test_field_with_explicit_annotation_preserved(self):
         """Test that explicit annotations are preserved."""
@@ -61,4 +61,4 @@ class TestFieldAnnotationHandling:
             args = get_args(annotation)
             # Original int type should be preserved
             assert int in args or (args and args[0] is int)
-            assert AutoClickParameter.OPTION in args
+            assert any(isinstance(arg, WryOption) for arg in args)

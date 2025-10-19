@@ -20,7 +20,7 @@ def get_env_var_names(model_class: type[T]) -> dict[str, str]:
     Returns:
         Dictionary mapping field names to environment variable names
     """
-    prefix = getattr(model_class, "env_prefix", "")
+    prefix = getattr(model_class, "wry_env_prefix", "")
     env_vars = {}
 
     for field_name, field_info in model_class.model_fields.items():

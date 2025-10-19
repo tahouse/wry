@@ -4,7 +4,7 @@ from typing import Annotated
 
 from pydantic import Field
 
-from wry import AutoClickParameter, AutoWryModel, create_auto_model
+from wry import AutoWryModel, WryOption, create_auto_model
 
 
 class TestAutoWryModelCoverage:
@@ -57,12 +57,12 @@ class TestAutoWryModelCoverage:
         # Should have original type plus metadata
         assert name_args[0] is str
         assert any(isinstance(m, CustomMetadata) for m in name_args[1:])
-        assert AutoClickParameter.OPTION in name_args[1:]
+        assert any(isinstance(m, WryOption) for m in name_args[1:])
 
         assert count_args[0] is int
         assert any(isinstance(m, CustomMetadata) for m in count_args[1:])
         assert "extra" in count_args[1:]
-        assert AutoClickParameter.OPTION in count_args[1:]
+        assert any(isinstance(m, WryOption) for m in count_args[1:])
 
     def test_auto_dry_model_field_without_annotation(self):
         """Test AutoWryModel with a field that has no type annotation."""
@@ -88,7 +88,7 @@ class TestAutoWryModelCoverage:
         assert str(origin) == str(Annotated)
         args = get_args(count_annotation)
         assert args[0] is int  # We gave it int annotation
-        assert AutoClickParameter.OPTION in args[1:]
+        assert any(isinstance(arg, WryOption) for arg in args[1:])
 
         # Value should use the type annotation
         value_annotation = ConfigMixedAnnotations.__annotations__["value"]
@@ -96,7 +96,7 @@ class TestAutoWryModelCoverage:
         assert str(origin) == str(Annotated)
         args = get_args(value_annotation)
         assert args[0] is float  # Type annotation is float
-        assert AutoClickParameter.OPTION in args[1:]
+        assert any(isinstance(arg, WryOption) for arg in args[1:])
 
     def test_auto_dry_model_non_field_annotation(self):
         """Test AutoWryModel with non-Field annotations."""

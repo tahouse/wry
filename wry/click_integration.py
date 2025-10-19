@@ -37,8 +37,77 @@ from pydantic_core import PydanticUndefined
 from .core import extract_field_constraints
 
 
+class WryOption:
+    """Marker for auto-generated Click options with customization."""
+
+    def __init__(
+        self,
+        *,
+        required: bool = False,
+        flag_enable_on_off: bool = True,
+        flag_off_prefix: str | None = None,
+        flag_off_option: str | None = None,
+        comma_separated: bool = False,
+    ):
+        """Initialize WryOption marker.
+
+        Args:
+            required: If True, option is required even if it has a default
+            flag_enable_on_off: For bool fields - True=use --option/--no-option pattern,
+                False=single --option flag
+            flag_off_prefix: For bool fields - Prefix for off-option
+                (e.g., "disable" → --option/--disable-option)
+            flag_off_option: For bool fields - Full off-option name
+                (e.g., "quiet" → --verbose/--quiet)
+            comma_separated: For list fields - True=comma-separated input (--tags a,b,c),
+                False=multiple option (--tags a --tags b)
+
+        Raises:
+            ValueError: If both flag_off_prefix and flag_off_option are provided,
+                or if they're provided when flag_enable_on_off=False
+        """
+        if flag_off_prefix and flag_off_option:
+            raise ValueError("Provide only one of flag_off_prefix or flag_off_option, not both")
+        if (flag_off_prefix or flag_off_option) and not flag_enable_on_off:
+            raise ValueError("Cannot specify flag_off_prefix/flag_off_option when flag_enable_on_off=False")
+
+        self.required = required
+        self.flag_enable_on_off = flag_enable_on_off
+        self.flag_off_prefix = flag_off_prefix
+        self.flag_off_option = flag_off_option
+        self.comma_separated = comma_separated
+
+
+class WryArgument:
+    """Marker for auto-generated Click arguments."""
+
+    def __init__(self) -> None:
+        """Initialize WryArgument marker."""
+        pass
+
+
+class WryExclude:
+    """Marker to exclude field from CLI generation."""
+
+    def __init__(self) -> None:
+        """Initialize WryExclude marker."""
+        pass
+
+
+# DEPRECATED v0.6.0: Old enum-based API
+# TODO: Remove in v1.0.0
 class AutoClickParameter(Enum):
-    """Markers for automatic Click parameter generation."""
+    """Deprecated: Use AutoOption(), AutoArgument(), AutoExclude() instead.
+
+    This enum is deprecated and will be removed in the next major version.
+    Use the new callable API instead:
+    - AutoClickParameter.OPTION → AutoOption()
+    - AutoClickParameter.REQUIRED_OPTION → AutoOption(required=True)
+    - AutoClickParameter.ARGUMENT → AutoArgument()
+    - AutoClickParameter.EXCLUDE → AutoExclude()
+
+    Note: Deprecation warnings are emitted when enum values are used in annotations.
+    """
 
     OPTION = auto()
     REQUIRED_OPTION = auto()
@@ -382,47 +451,92 @@ def generate_click_parameters(
 
         # Check what kind of Click integration we need
         click_parameter: ClickParameterDecorator[Any] | None = None
-        field_type: AutoClickParameter | None = None
+        wry_marker: WryOption | WryArgument | WryExclude | None = None
         use_comma_separated: bool = False
 
         for item in metadata:
-            if item == AutoClickParameter.OPTION:
-                field_type = AutoClickParameter.OPTION
-            elif item == AutoClickParameter.REQUIRED_OPTION:
-                field_type = AutoClickParameter.REQUIRED_OPTION
-            elif item == AutoClickParameter.ARGUMENT:
-                field_type = AutoClickParameter.ARGUMENT
-            elif item == AutoClickParameter.EXCLUDE:
-                field_type = AutoClickParameter.EXCLUDE
-                break  # Skip this field entirely
-            elif (
-                hasattr(item, "__module__")
-                and "click" in str(item.__module__)
-                and not isinstance(item, AutoClickParameter)
-            ):
-                click_parameter = item
-                break
-            # Check for CommaSeparated marker
+            # NEW: Check for Wry marker instances (check first - has comma_separated param)
+            if isinstance(item, WryOption | WryArgument | WryExclude):
+                wry_marker = item
+                # Check for comma_separated in WryOption
+                if isinstance(item, WryOption) and item.comma_separated:
+                    use_comma_separated = True
+                # Don't break yet - might have other markers
+            # DEPRECATED v0.6.0: Check for CommaSeparated marker (standalone)
+            # TODO: Remove in v1.0.0
             elif item.__class__.__name__ == "CommaSeparated" or (
                 hasattr(item, "__class__")
                 and item.__class__.__name__ == "type"
                 and hasattr(item, "__name__")
                 and item.__name__ == "CommaSeparated"
             ):
+                import warnings
+
+                warnings.warn(
+                    "Using standalone CommaSeparated marker is deprecated. "
+                    "Use AutoOption(comma_separated=True) instead.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
                 use_comma_separated = True
+                # Don't break - continue checking for other markers
+            # DEPRECATED v0.6.0: Check for Wry marker classes without calling them
+            # TODO: Remove in v1.0.0 - require users to call the class
+            elif item in (WryOption, WryArgument, WryExclude):
+                # Instantiate the class
+                if item is WryOption:
+                    wry_marker = WryOption()
+                elif item is WryArgument:
+                    wry_marker = WryArgument()
+                elif item is WryExclude:
+                    wry_marker = WryExclude()
+                # Don't break yet - might have CommaSeparated too
+            # DEPRECATED v0.6.0: Check for deprecated enum values (backwards compat)
+            # TODO: Remove in v1.0.0
+            elif item in (
+                AutoClickParameter.OPTION,
+                AutoClickParameter.REQUIRED_OPTION,
+                AutoClickParameter.ARGUMENT,
+                AutoClickParameter.EXCLUDE,
+            ):
+                import warnings
+
+                warnings.warn(
+                    f"Using AutoClickParameter.{item.name} is deprecated. "
+                    f"Use Auto{item.name.title().replace('_', '')}() instead.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                # Convert old enum to new marker
+                if item == AutoClickParameter.OPTION:
+                    wry_marker = WryOption()
+                elif item == AutoClickParameter.REQUIRED_OPTION:
+                    wry_marker = WryOption(required=True)
+                elif item == AutoClickParameter.ARGUMENT:
+                    wry_marker = WryArgument()
+                elif item == AutoClickParameter.EXCLUDE:
+                    wry_marker = WryExclude()
+                # Don't break yet - might have CommaSeparated too
+            # Check for explicit click decorator
+            elif hasattr(item, "__module__") and "click" in str(item.__module__):
+                click_parameter = item
+                break  # Break here - explicit decorators take full control
 
         # Skip excluded fields
-        if field_type == AutoClickParameter.EXCLUDE:
+        if isinstance(wry_marker, WryExclude):
             continue
 
-        if field_type == AutoClickParameter.OPTION or field_type == AutoClickParameter.REQUIRED_OPTION:
+        # Handle options (but not if there's an explicit click decorator)
+        if (isinstance(wry_marker, WryOption) or wry_marker is None) and click_parameter is None:
             # Auto-generate Click option from Field info
             # Use alias if available, otherwise use field name
             name_for_option = field_info.alias if field_info.alias else field_name
             option_name = f"--{name_for_option.replace('_', '-')}"
 
-            # Check if field is required first (needed to decide on default handling)
-            is_required = field_info.is_required() or field_type == AutoClickParameter.REQUIRED_OPTION
+            # Determine if required
+            is_required = field_info.is_required()
+            if isinstance(wry_marker, WryOption) and wry_marker.required:
+                is_required = True
 
             click_kwargs: dict[str, Any] = {
                 "help": field_info.description or f"{field_name.replace('_', ' ').title()}",
@@ -482,9 +596,15 @@ def generate_click_parameters(
             # Handle list types - either multiple=True or comma-separated
             if is_list_type:
                 # Check if comma-separated is enabled:
-                # 1. Per-field via CommaSeparated annotation (highest priority)
-                # 2. Model-wide via comma_separated_lists class variable
-                use_comma_sep = use_comma_separated or getattr(model_class, "comma_separated_lists", False)
+                # 1. Per-field via AutoOption(comma_separated=True) (NEW v0.6.0)
+                # 2. Per-field via CommaSeparated annotation (DEPRECATED - backwards compat)
+                # 3. Model-wide via wry_comma_separated_lists class variable
+                per_field_comma_sep = isinstance(wry_marker, WryOption) and wry_marker.comma_separated
+                use_comma_sep = (
+                    per_field_comma_sep
+                    or use_comma_separated
+                    or getattr(model_class, "wry_comma_separated_lists", False)
+                )
 
                 if use_comma_sep:
                     # Use comma-separated input instead of multiple=True
@@ -506,9 +626,55 @@ def generate_click_parameters(
                     # Standard behavior: multiple=True
                     click_kwargs["multiple"] = True
 
+            # NEW: Boolean handling with on/off support
             if base_type is bool:
-                click_kwargs["is_flag"] = True
-                click_kwargs.pop("show_default")  # Flags don't show defaults
+                # Determine on/off behavior (default=True for all bools)
+                use_on_off = True
+
+                if isinstance(wry_marker, WryOption) and not wry_marker.flag_enable_on_off:
+                    use_on_off = False
+
+                if not use_on_off:
+                    # Single flag (explicit opt-out)
+                    click_kwargs["is_flag"] = True
+                    click_kwargs.pop("show_default")
+                else:
+                    # On/off pattern (new default)
+                    off_option_name = None
+
+                    # Check for per-field customization
+                    if isinstance(wry_marker, WryOption):
+                        if wry_marker.flag_off_option:
+                            off_option_name = f"--{wry_marker.flag_off_option}"
+                        elif wry_marker.flag_off_prefix:
+                            off_option_name = f"--{wry_marker.flag_off_prefix}-{name_for_option.replace('_', '-')}"
+
+                    if not off_option_name:
+                        # Use model-wide prefix (wry_boolean_off_prefix)
+                        from .core.model import _DEFAULT_BOOLEAN_OFF_PREFIX
+
+                        off_prefix = getattr(model_class, "wry_boolean_off_prefix", _DEFAULT_BOOLEAN_OFF_PREFIX)
+                        off_option_name = f"--{off_prefix}-{name_for_option.replace('_', '-')}"
+
+                    # Collision detection
+                    collision_field = off_option_name.removeprefix("--").replace("-", "_")
+                    if collision_field in model_class.model_fields:
+                        import warnings
+
+                        warnings.warn(
+                            f"Boolean field '{field_name}' off-option '{off_option_name}' collides with "
+                            f"existing field '{collision_field}'. Falling back to single flag. "
+                            f"Use AutoOption(flag_off_option='other-name') to customize.",
+                            UserWarning,
+                            stacklevel=2,
+                        )
+                        click_kwargs["is_flag"] = True
+                        click_kwargs.pop("show_default")
+                    else:
+                        # Use on/off pattern
+                        option_name = f"{option_name}/{off_option_name}"
+                        # Don't pop show_default - Click handles it for on/off flags
+
             elif base_type is int:
                 click_kwargs["type"] = click.INT
             elif base_type is float:
@@ -534,7 +700,7 @@ def generate_click_parameters(
             import os
 
             # Get the environment variable prefix
-            env_prefix = getattr(model_class, "env_prefix", "DRYCLI_")
+            env_prefix = getattr(model_class, "wry_env_prefix", "DRYCLI_")
             # Use alias for env var name if available, otherwise use field name
             name_for_env = field_info.alias if field_info.alias else field_name
             env_var_name = f"{env_prefix}{name_for_env.upper()}"
@@ -555,7 +721,8 @@ def generate_click_parameters(
             )
             options.append(option)
 
-        elif field_type == AutoClickParameter.ARGUMENT:
+        # Handle arguments
+        elif isinstance(wry_marker, WryArgument):
             # Auto-generate Click argument from Field info
             argument_name = field_name.lower()
 
@@ -589,7 +756,7 @@ def generate_click_parameters(
             # Check if field has a default or if env var is set
             import os
 
-            env_prefix = getattr(model_class, "env_prefix", "")
+            env_prefix = getattr(model_class, "wry_env_prefix", "")
             name_for_env = field_info.alias if field_info.alias else field_name
             env_var_name = f"{env_prefix}{name_for_env.upper()}"
             env_var_set = env_var_name in os.environ

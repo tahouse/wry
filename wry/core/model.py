@@ -26,6 +26,9 @@ from .sources import FieldWithSource, TrackedValue, ValueSource
 # TypeVar for generic return types
 T = TypeVar("T", bound="WryModel")
 
+# Module-level constant for default boolean off-prefix
+_DEFAULT_BOOLEAN_OFF_PREFIX: str = "no"
+
 
 class WryModel(BaseModel):
     """Pydantic model with value source tracking.
@@ -54,11 +57,49 @@ class WryModel(BaseModel):
 
     model_config = ConfigDict(arbitrary_types_allowed=True, validate_by_name=True, validate_by_alias=True)
 
-    # Class variables that should not trigger Pydantic warnings
+    # NEW: wry-prefixed ClassVars (recommended pattern going forward)
+    wry_env_prefix: ClassVar[str] = ""
+    wry_comma_separated_lists: ClassVar[bool] = False
+    wry_boolean_off_prefix: ClassVar[str] = _DEFAULT_BOOLEAN_OFF_PREFIX
+
+    # DEPRECATED v0.6.0: Keep for backwards compatibility
+    # TODO: Remove in v1.0.0
     env_prefix: ClassVar[str] = ""
     comma_separated_lists: ClassVar[bool] = False  # If True, all list fields use comma-separated input
+
+    # Instance variables for source tracking
     _value_sources: dict[str, ValueSource] = {}
     _accessor_instances: dict[str, Any] = {}
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        """Check for deprecated ClassVar usage and migrate to new names."""
+        super().__init_subclass__(**kwargs)
+
+        # DEPRECATED v0.6.0: Migrate old env_prefix → wry_env_prefix
+        # TODO: Remove in v1.0.0
+        if "env_prefix" in cls.__dict__ and "wry_env_prefix" not in cls.__dict__:
+            import warnings
+
+            warnings.warn(
+                f"{cls.__name__}: 'env_prefix' is deprecated, use 'wry_env_prefix' instead. "
+                "Will be removed in next major version.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            cls.wry_env_prefix = cls.env_prefix
+
+        # DEPRECATED v0.6.0: Migrate old comma_separated_lists → wry_comma_separated_lists
+        # TODO: Remove in v1.0.0
+        if "comma_separated_lists" in cls.__dict__ and "wry_comma_separated_lists" not in cls.__dict__:
+            import warnings
+
+            warnings.warn(
+                f"{cls.__name__}: 'comma_separated_lists' is deprecated, use 'wry_comma_separated_lists' instead. "
+                "Will be removed in next major version.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            cls.wry_comma_separated_lists = cls.comma_separated_lists
 
     def __init__(self, **data: Any) -> None:
         # Standard Pydantic initialization

@@ -7,6 +7,123 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Boolean on/off flags** - Boolean fields now generate `--option/--no-option` pattern by default 🎚️
+  - Makes CLI interfaces more explicit - users can explicitly set false: `--no-debug`
+  - Default behavior: `debug: bool = Field(default=False)` → `--debug/--no-debug`
+  - Custom off-option: `AutoOption(flag_off_option="quiet")` → `--verbose/--quiet`
+  - Custom prefix: `AutoOption(flag_off_prefix="skip")` → `--check/--skip-check`
+  - Single flag opt-out: `AutoOption(flag_enable_on_off=False)` → `--debug` (old behavior)
+  - Model-wide customization: `wry_boolean_off_prefix: ClassVar[str] = "disable"`
+  - Collision detection: warns and falls back to single flag if off-option conflicts with existing field
+  - Works with aliases: `debug: bool = Field(alias="verbose")` → `--verbose/--no-verbose`
+  - Full source tracking support (CLI/ENV/JSON/DEFAULT)
+  - Follows Click best practices: <https://click.palletsprojects.com/en/stable/options/#boolean>
+  - **39 new tests** covering all scenarios
+
+- **Callable marker API** - Refactored Auto* markers from Enum to callable classes 🔧
+  - `AutoOption()` replaces `AutoClickParameter.OPTION`
+  - `AutoOption(required=True)` replaces `AutoClickParameter.REQUIRED_OPTION`
+  - `AutoArgument()` replaces `AutoClickParameter.ARGUMENT`
+  - `AutoExclude()` replaces `AutoClickParameter.EXCLUDE`
+  - All markers now support parameters for future extensibility
+  - Boolean-specific parameters: `flag_enable_on_off`, `flag_off_prefix`, `flag_off_option`
+  - List-specific parameter: `comma_separated` - replaces standalone `CommaSeparated` marker
+  - Example: `AutoOption(comma_separated=True)` replaces `Annotated[list[str], CommaSeparated]`
+  - Internal: Uses Wry-specific naming (WryOption, WryArgument, WryExclude classes)
+  - Public API: AutoOption, AutoArgument, AutoExclude are aliases to Wry* classes
+  - Follows PEP 593 Annotated pattern: <https://peps.python.org/pep-0593/>
+
+- **wry_ prefixed ClassVars** - New naming convention for class-level configuration 🏷️
+  - `wry_env_prefix: ClassVar[str]` replaces `env_prefix`
+  - `wry_comma_separated_lists: ClassVar[bool]` replaces `comma_separated_lists`
+  - `wry_boolean_off_prefix: ClassVar[str]` - new feature for boolean flags
+  - Avoids namespace collisions with user fields
+  - Future-proof for additional configuration options
+  - **10 new tests** for migration and new features
+
+### Deprecated
+
+- `AutoClickParameter` enum - Use `AutoOption()`, `AutoArgument()`, `AutoExclude()` instead
+  - Old enum values still work but emit `DeprecationWarning`
+  - Will be removed in next major version (v1.0.0)
+
+- `CommaSeparated` standalone marker - Use `AutoOption(comma_separated=True)` instead
+  - Old standalone marker still works but emits `DeprecationWarning`
+  - Will be removed in next major version (v1.0.0)
+
+- `env_prefix` ClassVar - Use `wry_env_prefix` instead
+  - Auto-migrates with `DeprecationWarning`
+  - Will be removed in next major version (v1.0.0)
+
+- `comma_separated_lists` ClassVar - Use `wry_comma_separated_lists` instead
+  - Auto-migrates with `DeprecationWarning`
+  - Will be removed in next major version (v1.0.0)
+
+### Migration Guide
+
+**From Enum to Callable API:**
+
+```python
+# Old (deprecated):
+field: Annotated[str, AutoClickParameter.OPTION] = Field(default="value")
+required: Annotated[str, AutoClickParameter.REQUIRED_OPTION] = Field(...)
+
+# New (recommended):
+field: Annotated[str, AutoOption()] = Field(default="value")
+required: Annotated[str, AutoOption(required=True)] = Field(...)
+```
+
+**ClassVar Migration:**
+
+```python
+# Old (deprecated):
+class Config(AutoWryModel):
+    env_prefix: ClassVar[str] = "MYAPP_"
+    comma_separated_lists: ClassVar[bool] = True
+
+# New (recommended):
+class Config(AutoWryModel):
+    wry_env_prefix: ClassVar[str] = "MYAPP_"
+    wry_comma_separated_lists: ClassVar[bool] = True
+    wry_boolean_off_prefix: ClassVar[str] = "no"  # Optional, "no" is default
+```
+
+**Comma-Separated Lists:**
+
+```python
+# Old (deprecated):
+tags: Annotated[list[str], CommaSeparated] = Field(default_factory=list)
+
+# New (recommended):
+tags: Annotated[list[str], AutoOption(comma_separated=True)] = Field(default_factory=list)
+```
+
+**Boolean On/Off Examples:**
+
+```python
+# Default on/off pattern
+debug: bool = Field(default=False)  # --debug/--no-debug
+
+# Custom off-option
+verbose: Annotated[bool, AutoOption(flag_off_option="quiet")] = Field(default=False)
+# → --verbose/--quiet
+
+# Opt-out to single flag
+simple: Annotated[bool, AutoOption(flag_enable_on_off=False)] = Field(default=False)
+# → --simple (old behavior)
+```
+
+### Internal Changes
+
+- Updated all internal code to use `wry_*` prefixed ClassVars
+- Metadata processing loop refactored to support multiple marker types
+- Boolean flag generation supports on/off pattern with customization
+- Comprehensive backwards compatibility layer with migration warnings
+- **Total test count: 535 tests (all passing)** ✨
+- Coverage: 88.5%+ (slight drop due to new features, will improve with more usage)
+
 ## [0.5.2] - 2025-10-14
 
 ### Fixed

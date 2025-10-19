@@ -3,11 +3,11 @@
 This module provides custom Click parameter types that parse comma-separated
 strings into lists, offering an alternative to Click's default multiple=True behavior.
 
-Two approaches are supported:
+Three approaches are supported:
 
-Approach 1: Per-field annotation (fine-grained control):
+Approach 1: NEW v0.6.0 - AutoOption parameter (recommended):
     ```python
-    from wry import AutoWryModel, CommaSeparated
+    from wry import AutoWryModel, AutoOption
     from typing import Annotated
 
     class Config(AutoWryModel):
@@ -15,17 +15,28 @@ Approach 1: Per-field annotation (fine-grained control):
         standard_tags: list[str] = Field(default_factory=list)
 
         # Comma-separated: --csv-tags a,b,c
-        csv_tags: Annotated[list[str], CommaSeparated] = Field(default_factory=list)
+        csv_tags: Annotated[list[str], AutoOption(comma_separated=True)] = Field(default_factory=list)
     ```
 
-Approach 2: Model-wide ClassVar (all list fields):
+Approach 2: DEPRECATED v0.6.0 - Per-field annotation (backwards compat):
+    ```python
+    from wry import AutoWryModel, CommaSeparated
+    from typing import Annotated
+
+    class Config(AutoWryModel):
+        # Comma-separated: --csv-tags a,b,c
+        csv_tags: Annotated[list[str], CommaSeparated] = Field(default_factory=list)
+    ```
+    Note: CommaSeparated marker is deprecated. Use AutoOption(comma_separated=True) instead.
+
+Approach 3: Model-wide ClassVar (all list fields):
     ```python
     from wry import AutoWryModel
     from typing import ClassVar
 
     class Config(AutoWryModel):
         # Enable comma-separated for ALL list fields
-        comma_separated_lists: ClassVar[bool] = True
+        wry_comma_separated_lists: ClassVar[bool] = True
 
         # All accept comma-separated input
         tags: list[str] = Field(default_factory=list)    # --tags a,b,c
@@ -157,10 +168,26 @@ class CommaSeparatedFloats(click.ParamType):
 
 
 # Marker class for Annotated metadata
+# DEPRECATED v0.6.0: Standalone marker
+# TODO: Remove in v1.0.0
 class CommaSeparated:
     """Marker to indicate a list field should accept comma-separated input.
 
-    Usage:
+    .. deprecated:: 0.6.0
+        Use ``AutoOption(comma_separated=True)`` instead.
+        This standalone marker is deprecated and will be removed in v1.0.0.
+
+    New usage (recommended):
+        ```python
+        from typing import Annotated
+        from wry import AutoWryModel, AutoOption
+
+        class Config(AutoWryModel):
+            # Accepts: --tags python,rust,go
+            tags: Annotated[list[str], AutoOption(comma_separated=True)] = Field(default_factory=list)
+        ```
+
+    Old usage (deprecated):
         ```python
         from typing import Annotated
         from wry import AutoWryModel, CommaSeparated

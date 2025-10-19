@@ -4,7 +4,7 @@ from typing import Any, get_args, get_origin
 
 from pydantic import Field
 
-from wry import AutoClickParameter, AutoWryModel
+from wry import AutoWryModel, WryOption
 
 
 class TestTypeInference:
@@ -23,8 +23,8 @@ class TestTypeInference:
             origin = get_origin(annotation)
             if origin:  # Should be Annotated
                 args = get_args(annotation)
-                # Should have AutoClickParameter.OPTION
-                assert AutoClickParameter.OPTION in args
+                # Should have WryOption instance
+                assert any(isinstance(arg, WryOption) for arg in args)
                 # Type should be int
                 type_arg = args[0] if args else Any
                 assert type_arg is int
@@ -50,7 +50,7 @@ class TestTypeInference:
                     if args:
                         # Should match expected type
                         assert args[0] is expected_type
-                        assert AutoClickParameter.OPTION in args
+                        assert any(isinstance(arg, WryOption) for arg in args)
 
     def test_field_info_annotation_inference(self):
         """Test type inference when FieldInfo has annotation."""
@@ -67,4 +67,4 @@ class TestTypeInference:
                 args = get_args(annotation)
                 # Should preserve int type
                 assert args[0] is int or args[0].__name__ == "int"
-                assert AutoClickParameter.OPTION in args
+                assert any(isinstance(arg, WryOption) for arg in args)

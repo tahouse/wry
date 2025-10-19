@@ -575,6 +575,127 @@ python app.py --tags a,b,c --ports 80,443 --values 1.5,2.7
 - `examples/autowrymodel_comprehensive.py` - Complete AutoWryModel example with aliases
 - `examples/wrymodel_comprehensive.py` - WryModel with aliases and source tracking
 
+### Boolean On/Off Flags
+
+**New in v0.6.0+**: Boolean fields automatically generate both on and off options using the `--option/--no-option` pattern, making CLI interfaces more explicit and user-friendly.
+
+#### Default Behavior
+
+```python
+from wry import AutoWryModel
+from pydantic import Field
+
+class Config(AutoWryModel):
+    debug: bool = Field(default=False, description="Enable debug mode")
+    verbose: bool = Field(default=False, description="Verbose output")
+
+# Generates CLI options:
+# --debug/--no-debug
+# --verbose/--no-verbose
+```
+
+**Usage:**
+
+```bash
+# Explicitly enable
+python app.py --debug --verbose
+
+# Explicitly disable
+python app.py --no-debug --no-verbose
+
+# Mix both
+python app.py --debug --no-verbose
+```
+
+#### Custom Off-Option Names
+
+```python
+from typing import Annotated
+from wry import AutoOption
+
+class Config(AutoWryModel):
+    # Custom off-option name
+    verbose: Annotated[bool, AutoOption(flag_off_option="quiet")] = Field(
+        default=False, description="Verbose output"
+    )
+    # → --verbose/--quiet (instead of --verbose/--no-verbose)
+```
+
+#### Custom Off-Option Prefix
+
+```python
+class Config(AutoWryModel):
+    # Per-field custom prefix (prefix appears before option name)
+    check: Annotated[bool, AutoOption(flag_off_prefix="skip")] = Field(
+        default=True, description="Run validation checks"
+    )
+    # → --check/--skip-check (instead of --check/--no-check)
+```
+
+#### Model-Wide Customization
+
+```python
+from typing import ClassVar
+
+class Config(AutoWryModel):
+    # Set prefix for ALL boolean fields
+    wry_boolean_off_prefix: ClassVar[str] = "skip"
+
+    check: bool = Field(default=False)      # --check/--skip-check
+```
+
+#### Opt-Out to Single Flag
+
+If you prefer the old single-flag behavior for specific fields:
+
+```python
+class Config(AutoWryModel):
+    # Most fields use on/off pattern
+    debug: bool = Field(default=False)  # --debug/--no-debug
+
+    # Opt-out to single flag
+    simple: Annotated[bool, AutoOption(flag_enable_on_off=False)] = Field(
+        default=False, description="Simple mode"
+    )
+    # → --simple (single flag, old behavior)
+```
+
+#### With Aliases
+
+Boolean on/off works seamlessly with Pydantic aliases:
+
+```python
+class Config(AutoWryModel):
+    dbg: bool = Field(alias="debug", default=False, description="Debug mode")
+    # → --debug/--no-debug (uses alias name)
+```
+
+#### Collision Detection
+
+If the generated off-option would conflict with an existing field name, wry automatically detects this and falls back to a single flag with a warning:
+
+```python
+class Config(AutoWryModel):
+    debug: bool = Field(default=False)
+    no_debug: str = Field(default="something")  # Conflicts with --no-debug!
+
+# Warning emitted: "Boolean field 'debug' off-option '--no-debug' collides with existing field 'no_debug'"
+# Automatically falls back to single --debug flag
+```
+
+**Test Coverage:**
+
+- `tests/unit/auto_model/test_boolean_on_off_flags.py` - Comprehensive tests (15 tests)
+- `tests/integration/test_boolean_flags_integration.py` - Integration tests (8 tests)
+- All boolean features work with source tracking, JSON config, and environment variables
+
+**Design Rationale:**
+
+- Follows Click best practices: <https://click.palletsprojects.com/en/stable/options/#boolean>
+- More explicit than single flags - users can clearly see both on and off options
+- Backwards compatible via opt-out mechanism
+- Follows PEP 593 Annotated pattern for customization
+
 ### Model Inheritance
 
 **New in v0.3.3+**: Both `WryModel` and `AutoWryModel` fully support inheritance! Create base configuration classes and extend them with additional fields.

@@ -228,11 +228,13 @@ def test_your_feature_with_click():
 - If an ignore directive is truly necessary, add a detailed comment explaining why
 
 **Example - Bad**:
+
 ```python
 result = some_function()  # type: ignore  # ❌ Don't do this
 ```
 
 **Example - Good**:
+
 ```python
 # Fix the type annotation properly
 def some_function() -> dict[str, Any]:  # ✅ Proper return type
@@ -289,9 +291,10 @@ from wry import AutoWryModel, AutoOption
 class MyConfig(AutoWryModel):
     """Configuration for my CLI tool."""
 
-    # Class-level configuration (NOT a field)
-    env_prefix: ClassVar[str] = "MYAPP_"
-    comma_separated_lists: ClassVar[bool] = False  # Optional
+    # Class-level configuration (NOT a field) - use wry_ prefix (v0.6.0+)
+    wry_env_prefix: ClassVar[str] = "MYAPP_"
+    wry_comma_separated_lists: ClassVar[bool] = False  # Optional
+    wry_boolean_off_prefix: ClassVar[str] = "no"  # Optional, customize boolean off-options
 
     # Fields become CLI options automatically
     host: str = Field(
@@ -324,7 +327,8 @@ def main(ctx: click.Context, **kwargs: Any) -> None:
 **Key Points**:
 
 - Extend `AutoWryModel` for automatic option generation
-- Use `ClassVar` for class-level config (`env_prefix`, `comma_separated_lists`)
+- Use `ClassVar` for class-level config (`wry_env_prefix`, `wry_comma_separated_lists`, `wry_boolean_off_prefix`)
+- Use new callable API: `AutoOption()`, `AutoArgument()`, `AutoExclude()`
 - Use `generate_click_parameters()` decorator
 - Load config with `from_click_context(ctx, **kwargs)` for source tracking
 - Access sources with `config.source.field_name`
@@ -343,7 +347,7 @@ class Config(AutoWryModel):
 
 # Or model-wide comma-separated:
 class CommaSepConfig(AutoWryModel):
-    comma_separated_lists: ClassVar[bool] = True  # All lists use comma-separated
+    wry_comma_separated_lists: ClassVar[bool] = True  # All lists use comma-separated
 
     tags: list[str] = Field(default_factory=list)  # Now: --tags python,rust,go
 ```
@@ -449,6 +453,7 @@ def test_feature_with_clear_name():
 - [ ] **Examples**: Add or update examples if demonstrating new features
 
 **Documentation Management**:
+
 - **Do not create excessive markdown files** unless explicitly needed
 - If markdown files exist, add content to the appropriate existing file
 - If unsure which file is appropriate, consider whether the content belongs in README.md, AI_KNOWLEDGE_BASE.md, or CHANGELOG.md
@@ -460,7 +465,7 @@ def test_feature_with_clear_name():
 - [ ] **Docstrings**: All public functions/classes/modules have comprehensive docstrings (Google style)
 - [ ] **No dead code**: Remove unused imports, variables, commented code
 - [ ] **DRY principle**: No duplicate code - extract common logic
-- [ ] **ClassVar for class config**: Use `ClassVar` for `env_prefix`, `comma_separated_lists`
+- [ ] **ClassVar for class config**: Use `ClassVar` for `wry_env_prefix`, `wry_comma_separated_lists`, `wry_boolean_off_prefix`
 
 ### 3. Tests
 
@@ -497,7 +502,7 @@ mypy wry/
 
 - [ ] **Source tracking works**: If touching config/model code, verify source tracking
 - [ ] **Precedence correct**: CLI > JSON > ENV > DEFAULT (verify if changing)
-- [ ] **ClassVar not in fields**: Ensure `env_prefix`, `comma_separated_lists` use `ClassVar`
+- [ ] **ClassVar not in fields**: Ensure `wry_env_prefix`, `wry_comma_separated_lists`, `wry_boolean_off_prefix` use `ClassVar`
 - [ ] **Examples still work**: Run examples if you changed core functionality
 - [ ] **Help text clear**: Generated --help output is helpful
 
@@ -529,7 +534,7 @@ Use [Conventional Commits](https://www.conventionalcommits.org/) format:
 feat: add comma-separated list support
 
 - Add CommaSeparated marker for per-field annotation
-- Add comma_separated_lists ClassVar for model-wide setting
+- Add wry_comma_separated_lists ClassVar for model-wide setting
 - Per-field annotation takes priority over model-wide
 - Full Pydantic validation preserved
 
@@ -547,6 +552,7 @@ Closes #42
 - Always pass `--yes` or appropriate non-interactive flags to avoid user prompts
 
 **Example**:
+
 ```bash
 # Bad - Git sees this as delete + add
 rm old_file.py
@@ -576,16 +582,20 @@ git mv old_file.py new_file.py
 ## Pull Request Process
 
 1. **Branch**: Create feature branch from `main`
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
+
 2. **Complete checklist**: Follow Pre-Commit Checklist above
 3. **Commit**: Make your commit with conventional commit message
 4. **Test**: Pre-commit hook will run checks automatically
 5. **Push**: Push to remote
+
    ```bash
    git push -u origin feature/your-feature-name
    ```
+
 6. **PR**: Submit with clear description referencing checklist items
 
 ## Critical Rules
@@ -614,9 +624,10 @@ If pre-commit hooks are failing:
 2. **DRY everywhere**: Configuration defined once, used everywhere
 3. **Examples are crucial**: Users learn from examples - keep them clear and comprehensive
 4. **Test all 4 sources**: When adding config features, test CLI/ENV/JSON/DEFAULT
-5. **ClassVar correctness**: `env_prefix` and `comma_separated_lists` must be ClassVar
-6. **Explicit decorators work**: Users can always use explicit `click.option()` - preserve this
-7. **No surprises**: Behavior should match documentation exactly
+5. **ClassVar correctness**: `wry_env_prefix`, `wry_comma_separated_lists`, `wry_boolean_off_prefix` must be ClassVar
+6. **New callable API**: Use `AutoOption()`, `AutoArgument()`, `AutoExclude()` not old enum
+7. **Explicit decorators work**: Users can always use explicit `click.option()` - preserve this
+8. **No surprises**: Behavior should match documentation exactly
 
 ## Guidelines
 
@@ -633,7 +644,7 @@ If pre-commit hooks are failing:
 ### DON'T
 
 ❌ Break source precedence (CLI > JSON > ENV > DEFAULT)
-❌ Make `env_prefix` or `comma_separated_lists` regular fields
+❌ Make `wry_env_prefix`, `wry_comma_separated_lists`, or `wry_boolean_off_prefix` regular fields
 ❌ Skip testing source tracking
 ❌ Bypass pre-commit hooks
 ❌ Create duplicate functionality
@@ -645,6 +656,7 @@ If pre-commit hooks are failing:
 For information about creating releases, see **`RELEASE_PROCESS.md`**.
 
 **Key points**:
+
 - During development: Add all changes to `[Unreleased]` in CHANGELOG.md
 - When releasing: Convert `[Unreleased]` to `[X.Y.Z] - YYYY-MM-DD`
 - Tag the release commit: `git tag -s vX.Y.Z`

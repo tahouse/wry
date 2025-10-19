@@ -15,18 +15,18 @@ This example demonstrates:
 """
 
 from datetime import datetime
-from typing import Annotated, Any
+from typing import Annotated, Any, ClassVar
 
 import click
 from pydantic import Field
 
-from wry import AutoArgument, AutoExclude, AutoWryModel
+from wry import AutoArgument, AutoExclude, AutoOption, AutoWryModel
 
 
 class ComprehensiveConfig(AutoWryModel):
     """All AutoWryModel features in one model."""
 
-    env_prefix = "APP_"
+    wry_env_prefix: ClassVar[str] = "APP_"
 
     # ============================================================================
     # ARGUMENTS - Positional parameters (required or with defaults)
@@ -57,9 +57,32 @@ class ComprehensiveConfig(AutoWryModel):
         description="Server port number",
     )
 
+    # ============================================================================
+    # BOOLEAN FLAGS - On/off pattern (v0.6.0+)
+    # Boolean fields automatically generate --option/--no-option
+    # ============================================================================
+
     debug: bool = Field(
         default=False,
-        description="Enable debug mode",
+        description="Enable debug mode (--debug/--no-debug)",
+    )
+
+    # Custom off-option name (full custom name for off-option)
+    quiet_mode: Annotated[bool, AutoOption(flag_off_option="loud")] = Field(
+        default=False,
+        description="Quiet mode (--quiet-mode/--loud instead of --no-quiet-mode)",
+    )
+
+    # Custom off-prefix (prefix appears before option name)
+    check: Annotated[bool, AutoOption(flag_off_prefix="skip")] = Field(
+        default=True,
+        description="Run validation checks (--check/--skip-check instead of --check/--no-check)",
+    )
+
+    # Single flag (opt-out of on/off pattern)
+    force: Annotated[bool, AutoOption(flag_enable_on_off=False)] = Field(
+        default=False,
+        description="Force operation (single --force flag, old behavior)",
     )
 
     # ============================================================================
@@ -216,9 +239,14 @@ def main(ctx: click.Context, **kwargs: Any):
     click.echo("\n🔧 Simple Options:")
     click.echo(f"  Host:    {config.host}")
     click.echo(f"  Port:    {config.port}")
-    click.echo(f"  Debug:   {config.debug}")
     click.echo(f"  Workers: {config.workers}")
     click.echo(f"  Timeout: {config.timeout}s")
+
+    click.echo("\n🎚️  Boolean Flags (on/off pattern):")
+    click.echo(f"  Debug:       {config.debug} (--debug/--no-debug)")
+    click.echo(f"  Quiet Mode:  {config.quiet_mode} (--quiet-mode/--loud)")
+    click.echo(f"  Check:       {config.check} (--check/--skip-check)")
+    click.echo(f"  Force:       {config.force} (--force, single flag)")
 
     click.echo("\n🏷️  Pydantic Aliases (concise Python → descriptive CLI):")
     click.echo(f"  Database URL:    {config.db_url}")
