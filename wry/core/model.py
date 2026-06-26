@@ -601,9 +601,10 @@ class WryModel(BaseModel):
                         param_source = ctx.get_parameter_source(field_name)
 
                     if param_source is not None:
-                        source_str = str(param_source)
+                        # Use .name for Click 8.4+ compatibility (integer-valued enum)
+                        source_name = param_source.name if hasattr(param_source, "name") else str(param_source)
                         # Only override if it's actually from CLI
-                        if "COMMANDLINE" in source_str:
+                        if "COMMANDLINE" in source_name:
                             config_data[field_name] = TrackedValue(value, ValueSource.CLI)
                             continue
                         # Skip if it's DEFAULT or ENVIRONMENT - already handled above
