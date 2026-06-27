@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.2] - 2026-06-26
+
+### Changed
+
+- Replaced `AI_KNOWLEDGE_BASE.md` (2,913 lines) with concise `AGENTS.md` (266 lines)
+- Slimmed `.cursorrules` to a pointer referencing `AGENTS.md`
+- Updated `help_system.py` to read from `AGENTS.md`
+- Updated all cross-references (README, CONTRIBUTING, RELEASE_PROCESS, DEPRECATION)
+- Cleaned up stale `TODO.md` (marked v0.3-v0.6 features as completed)
+
+### Fixed
+
+- CI: Removed fragile `test_version_module_type_checking_true` that assumed `setuptools-scm`'s `_version.py` always contains `TYPE_CHECKING` attribute
+
+## [0.6.1] - 2026-06-26
+
+### Fixed
+
+- **Click 8.4+ compatibility**: Click 8.4.0 changed `ParameterSource` from a string-valued to integer-valued enum, causing source detection to silently fail (all CLI values treated as DEFAULT). Use `.name` attribute instead of `str()` for reliable comparison across all Click 8.x versions.
+- Loosened test assertions for Click's changed error message format
+
 ## [0.6.0] - 2025-10-19
 
 ### Added
