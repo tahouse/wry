@@ -146,7 +146,7 @@ When removing deprecated features in v1.0.0:
 - [ ] Remove deprecation sections from `CHANGELOG.md`
 - [ ] Remove migration guide from `CHANGELOG.md`
 - [ ] Remove deprecated patterns from examples
-- [ ] Update `AI_KNOWLEDGE_BASE.md` to remove old API references
+- [ ] Update `AGENTS.md` to remove old API references
 - [ ] Update `README.md` to remove old patterns
 - [ ] Archive this `DEPRECATION.md` file
 

@@ -2,7 +2,7 @@
 
 Provides different levels of documentation:
 - Quick help (README summary)
-- AI Knowledge Base (for LLMs)
+- AGENTS.md (AI/LLM reference)
 - Source tracking guide
 - Architecture documentation
 """
@@ -37,28 +37,29 @@ def get_help_content(help_type: HelpType = "readme") -> str:
         return "README.md not found"
 
     elif help_type == "ai":
-        ai_kb_path = package_root / "AI_KNOWLEDGE_BASE.md"
-        if ai_kb_path.exists():
-            return ai_kb_path.read_text()
-        return "AI_KNOWLEDGE_BASE.md not found"
+        agents_path = package_root / "AGENTS.md"
+        if agents_path.exists():
+            return agents_path.read_text()
+        return "AGENTS.md not found"
 
     elif help_type == "sources":
-        # Extract source tracking section from AI knowledge base
-        ai_kb_path = package_root / "AI_KNOWLEDGE_BASE.md"
-        if ai_kb_path.exists():
-            content = ai_kb_path.read_text()
-            # Find test coverage section
-            if "## Test Coverage Summary" in content:
-                start = content.index("## Test Coverage Summary")
-                # Find next major section or end
-                next_section = content.find("\n## Common Issues", start + 1)
-                if next_section > 0:
-                    return "# Source Tracking - " + content[start:next_section]
-                # Try another section
+        # Extract source tracking section from AGENTS.md
+        agents_path = package_root / "AGENTS.md"
+        if agents_path.exists():
+            content = agents_path.read_text()
+            if "## Configuration Precedence" in content:
+                start = content.index("## Configuration Precedence")
+                return content[start:]
+        # Fall back to README
+        readme_path = package_root / "README.md"
+        if readme_path.exists():
+            content = readme_path.read_text()
+            if "## Value Source Tracking" in content:
+                start = content.index("## Value Source Tracking")
                 next_section = content.find("\n## ", start + 1)
                 if next_section > 0:
-                    return "# Source Tracking - " + content[start:next_section]
-                return "# Source Tracking - " + content[start:]
+                    return content[start:next_section]
+                return content[start:]
         return "Source tracking documentation not found"
 
     elif help_type == "architecture":
@@ -132,7 +133,7 @@ def show_help_index() -> None:
     click.echo("Available help topics:")
     click.echo()
     click.echo("  readme       - Main README documentation (default)")
-    click.echo("  ai           - AI/LLM Knowledge Base (comprehensive)")
+    click.echo("  ai           - AI/LLM assistant reference (AGENTS.md)")
     click.echo("  sources      - Source tracking test coverage")
     click.echo("  architecture - Architecture and design documentation")
     click.echo("  examples     - List of available examples")

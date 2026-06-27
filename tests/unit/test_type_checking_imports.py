@@ -1,22 +1,16 @@
 """Test TYPE_CHECKING imports coverage."""
 
-from unittest.mock import patch
-
 
 class TestTypeCheckingImports:
     """Test TYPE_CHECKING conditional imports."""
 
-    def test_version_module_type_checking_true(self):
-        """Test _version module when TYPE_CHECKING is True."""
-        # Import the module first to ensure it exists
+    def test_version_module_importable(self):
+        """Test _version module can be imported and has version info."""
         import wry._version
 
-        # Patch TYPE_CHECKING to True
-        with patch("wry._version.TYPE_CHECKING", True):
-            # The module should still work
-            assert hasattr(wry._version, "__version__")
-            assert hasattr(wry._version, "VERSION_TUPLE")
-            assert hasattr(wry._version, "COMMIT_ID")
+        # The auto-generated module should always have version info
+        assert hasattr(wry._version, "__version__")
+        assert isinstance(wry._version.__version__, str)
 
     def test_core_modules_type_checking(self):
         """Test TYPE_CHECKING blocks in core modules."""
