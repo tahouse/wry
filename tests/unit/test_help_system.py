@@ -16,17 +16,17 @@ class TestHelpSystem:
         assert len(content) > 100
 
     def test_get_help_content_ai(self):
-        """Test getting AI knowledge base."""
+        """Test getting AI assistant reference."""
         content = get_help_content("ai")
-        assert "AI/LLM Knowledge Base" in content
-        assert "Configuration Flow" in content
-        assert len(content) > 1000
+        assert "AI Assistant Reference" in content
+        assert "Architecture Overview" in content
+        assert len(content) > 500
 
     def test_get_help_content_sources(self):
         """Test getting source tracking info."""
         content = get_help_content("sources")
-        # Should extract from AI KB or return not found message
-        assert "Source Tracking" in content or "Test Coverage" in content or "not found" in content
+        # Should extract from AGENTS.md or README, or return not found
+        assert "Configuration Precedence" in content or "Source Tracking" in content or "not found" in content
 
     def test_get_help_content_architecture(self):
         """Test getting architecture info."""

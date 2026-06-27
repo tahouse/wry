@@ -47,7 +47,7 @@ Follow these steps IN ORDER:
 
 3. **Update documentation**
    - Update README.md if needed
-   - Update AI_KNOWLEDGE_BASE.md version numbers
+   - Update AGENTS.md version numbers
    - Update any affected documentation
 
 4. **Commit the release preparation**
@@ -75,7 +75,7 @@ Continue development by:
    - Archive or remove completed items from the released version
    - Add new tasks or features planned for next release
    - Update roadmap and priorities
-3. Update version numbers in AI_KNOWLEDGE_BASE.md if not already done
+3. Update version numbers in AGENTS.md if not already done
 
 ## Example
 

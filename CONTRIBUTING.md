@@ -43,7 +43,7 @@ wry/
 │
 ├── scripts/                 # Development tools
 ├── docs/                    # Documentation
-├── AI_KNOWLEDGE_BASE.md     # Complete reference for AI/LLMs
+├── AGENTS.md                # Complete reference for AI/LLMs
 ├── README.md                # User documentation
 └── CHANGELOG.md             # Version history
 ```
@@ -448,7 +448,7 @@ def test_feature_with_clear_name():
   - `Removed` - Removed features
   - `Security` - Security fixes
 - [ ] **README.md**: Update if user-facing features, usage, or API changed
-- [ ] **AI_KNOWLEDGE_BASE.md**: Update if architecture, implementation details, or patterns changed
+- [ ] **AGENTS.md**: Update if architecture, implementation details, or patterns changed
 - [ ] **Module docstrings**: Update docstrings in modified modules
 - [ ] **Examples**: Add or update examples if demonstrating new features
 
@@ -456,7 +456,7 @@ def test_feature_with_clear_name():
 
 - **Do not create excessive markdown files** unless explicitly needed
 - If markdown files exist, add content to the appropriate existing file
-- If unsure which file is appropriate, consider whether the content belongs in README.md, AI_KNOWLEDGE_BASE.md, or CHANGELOG.md
+- If unsure which file is appropriate, consider whether the content belongs in README.md, AGENTS.md, or CHANGELOG.md
 - Before creating a new markdown file, ask: Is this really necessary?
 
 ### 2. Code Quality
@@ -639,7 +639,7 @@ If pre-commit hooks are failing:
 ✅ Write comprehensive docstrings
 ✅ Add tests for edge cases
 ✅ Use `from_click_context()` for source tracking
-✅ Update both README.md and AI_KNOWLEDGE_BASE.md
+✅ Update both README.md and AGENTS.md
 
 ### DON'T
 
@@ -665,7 +665,7 @@ For information about creating releases, see **`RELEASE_PROCESS.md`**.
 ## Questions?
 
 - Check `examples/` for usage patterns
-- Check `AI_KNOWLEDGE_BASE.md` for complete technical reference
+- Check `AGENTS.md` for complete technical reference
 - Check `README.md` for user documentation
 - Check `RELEASE_PROCESS.md` for release workflow
 - Check `TODO.md` for current tasks and planned features

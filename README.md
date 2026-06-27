@@ -975,7 +975,7 @@ We welcome contributions! Please see **`CONTRIBUTING.md`** for comprehensive gui
 
 - 📖 **`CONTRIBUTING.md`** - Complete contributor guide (for humans)
 - 🤖 **`.cursorrules`** - AI assistant quick reference
-- 📚 **`AI_KNOWLEDGE_BASE.md`** - Complete technical reference
+- 📚 **`AGENTS.md`** - AI/LLM assistant reference
 - 🚀 **`RELEASE_PROCESS.md`** - Release workflow and versioning
 
 ### Development Setup
@@ -1164,7 +1164,7 @@ wry has comprehensive documentation for different audiences:
 
 ### Technical Reference
 
-- 📚 **`AI_KNOWLEDGE_BASE.md`** - Complete technical reference for AI/LLMs (also useful for humans)
+- 📚 **`AGENTS.md`** - AI/LLM assistant reference
 - 📝 **`CHANGELOG.md`** - Version history and all changes
 - 🧪 **`tests/README.md`** - Test organization and structure
 - 🔧 **`scripts/README.md`** - Development scripts and tools
@@ -1189,7 +1189,7 @@ wry has comprehensive documentation for different audiences:
 **I'm an AI assistant, I want to...**
 
 - Quick reference → `.cursorrules`
-- Technical details → `AI_KNOWLEDGE_BASE.md`
+- Technical details → `AGENTS.md`
 - Code patterns → `CONTRIBUTING.md`
 - Test examples → `tests/features/test_source_precedence.py`
 
